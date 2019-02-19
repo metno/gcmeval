@@ -1,0 +1,29 @@
+Package: DECM
+Version: 0.9.1
+Date: Feb 1 2019
+Title: Climate Data Storage Evaluation and Quality Control
+Author: Kajsa M. Parding <kajsa.parding@met.no>, 
+        Olle Raty <olle.raty@helsinki.fi>, 
+        Andreas Dobler <andreas.dobler@met.no>, 
+        and Rasmus E. Benestad <rasmus.benestad@met.no>
+Maintainer: Kajsa Parding <kajsa.parding@met.no>
+Depends:
+    R (>= 2.10.0)
+Imports:
+    esd,
+    graphics,
+    grDevices,
+    ncdf4,
+    raster,
+    RCurl,
+    rgdal,
+    stats,
+    sp,
+    utils,
+    zoo
+Suggests:
+    PCICt
+Description: The package contains R functions for retrieving and organising data, extracting metadata into a metadatabase.
+License: GPL (>= 2)
+URL: https://github.com/metno/abc4cde_wp4
+ZipData: no
