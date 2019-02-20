@@ -10,13 +10,11 @@
 }
 \usage{
 calculate.statistics.cmip(reference="era", period=c(1981,2010),
-                          variable="tas", experiment="rcp45", 
-                          nfiles=5, path.gcm=NULL, continue=TRUE, 
-                          mask="coords.txt", verbose=FALSE)
-calculate.rmse.cmip(reference="era", period=c(1981,2010), 
-                    variable="tas", experiment="rcp45", 
-                    nfiles=4, continue=TRUE, verbose=FALSE, 
-                    path=NULL, path.gcm=NULL)
+          variable="tas", experiment="rcp45", nfiles=5, 
+          path.gcm=NULL, continue=TRUE, path=NULL, 
+          mask="coords.txt", store.file="statistics.rda",
+          stats=c("mean","spatial.sd","corr","rmse"),
+          force=FALSE, verbose=FALSE)
 calculate.mon.weights(lon,lat)
 }
 \arguments{
@@ -27,6 +25,13 @@ calculate.mon.weights(lon,lat)
   \item{nfiles}{number of files to analyse, can be a number or "all"}
   \item{path.gcm}{path to GCM data}
   \item{path}{path to output files}
+  \item{store.file}{filename of output file}
+  \item{stats}{statistics to calculate: 
+  'mean' = annual and monthly mean of the spatial average, 
+  'spatial.sd' = annual and monthly mean of the spatial standard deviation,
+  'corr' = annual and monthly mean spatial correlation of the GCM and a reference data set,
+  'rmse' = root mean square error of the mean seasonal cycle of a GCM compared to a reference data set,
+  'cmpi' = climate model performance index, i.e., the normalised rmse.}
   \item{continue}{if TRUE add statistics to existing file, if FALSE create new file}
   \item{mask}{a spatial mask}
   \item{lon}{a vector containing longitudes}

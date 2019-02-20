@@ -8,7 +8,6 @@ importFrom("sp", "coordinates")
 
 # Exports - in alphabetic order
 export(calculate.mon.weights)
-export(calculate.rmse.cmip)
 export(calculate.statistics.cmip)
 export(cdo.mean)
 export(cdo.spatSd)

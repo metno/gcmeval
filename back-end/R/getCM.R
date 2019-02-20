@@ -18,7 +18,7 @@ getCM <- function(url=NULL,destfile='CM.nc',path=NULL,
       try(file.remove(destfile), silent=TRUE)
       return()
     }
-    X <- try(esd::retrieve.field(destfile,lon=lon,lat=lat,verbose=verbose), silent=TRUE)
+    X <- try(esd::retrieve.default(destfile,lon=lon,lat=lat,verbose=verbose), silent=TRUE)
   }
   ## Collect information stored in the netCDF header
   cid <- getatt(destfile)
