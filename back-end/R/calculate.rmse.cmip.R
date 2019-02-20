@@ -1,15 +1,25 @@
 ## Calculate the root mean square error (rms) and relative rms (e)
-calculate.rmse.cmip <- function(reference="era", period=c(1981,2010), variable="tas", experiment="rcp45", 
-                                nfiles=4, continue=TRUE, verbose=FALSE, path=NULL, path.gcm=NULL) {
+calculate.rmse.cmip <- function(reference="era", period=c(1981,2010), 
+                                variable="tas", experiment="rcp45", 
+                                nfiles=4, continue=TRUE, path=NULL, 
+                                store.file="statistics.rda", path.gcm=NULL, verbose=FALSE) {
   if(verbose) print("calculate.rmse.cmip")
   shape <-  get.shapefile("referenceRegions.shp")
   srex.regions <- as.character(shape$LAB)
   
-  store <- list()
-  store.file <- paste("statistics.cmip", reference, variable, paste(period, collapse="-"),
-                      experiment, "rda", sep=".")
+  label.period <- paste(period, collapse="-")
   if(!is.null(path)) store.file <- file.path(path,store.file)
-  if(file.exists(store.file)) load(store.file)
+  if(file.exists(store.file) && !force) {
+    load(store.file)
+    if(length(statistics[[variable]][[experiment]][[label.period]])>0) {
+      X <- statistics[[variable]][[experiment]][[label.period]]
+    } else {
+      X <- list()
+    }
+  } else {
+    X <- list()
+    statistics <- list()
+  }
   
   ## Pre-process reference file if necessary
   ref.file <- getReference(reference,variable)
@@ -35,10 +45,9 @@ calculate.rmse.cmip <- function(reference="era", period=c(1981,2010), variable="
     cdo.command(c("-ymonmean","-selyear"),c("",paste(period,collapse="/")),
                 ref.mulc, ref.mon.file)
   }
-  ref <- zoo::coredata(esd::retrieve(ref.mon.file))
+  ref <- zoo::coredata(esd::retrieve.default(ref.mon.file))
   
   ## Calculate weights only once
-  #r <- raster::raster(ref)#.mon.file)
   lon <- attr(ref,"longitude")
   lat <- attr(ref,"latitude")
   weights <- calculate.mon.weights(lon,lat)
@@ -70,7 +79,7 @@ calculate.rmse.cmip <- function(reference="era", period=c(1981,2010), variable="
                 gcm.file, gcm.mon.file)
     gcm <- zoo::coredata(esd::retrieve(gcm.mon.file))
     dim(gcm) <- dim(ref) <- c(12,length(attr(gcm,"longitude")),length(attr(gcm,"latitude")))
-    store[[store.name]]$global$rms <- sqrt(sum(weights*(gcm-ref)^2)/sum(weights))
+    X[[store.name]]$global$rms <- sqrt(sum(weights*(gcm-ref)^2)/sum(weights))
     for(region in srex.regions) {
       polygon <- shape[which(srex.regions==region),]
       mask <- gen.mask.srex(destfile=gcm.file,mask.polygon=polygon)
@@ -79,7 +88,7 @@ calculate.rmse.cmip <- function(reference="era", period=c(1981,2010), variable="
       ref.masked <- mask.zoo(ref,mask)
       dim(gcm.masked) <- dim(ref.masked) <- 
         c(12,length(attr(gcm,"longitude")),length(attr(gcm,"latitude")))
-      store[[store.name]][[region]]$rms <- 
+      X[[store.name]][[region]]$rms <- 
         sqrt(sum(weights*(gcm.masked-ref.masked)^2,na.rm=TRUE)/
                sum(weights[!is.na(gcm.masked)]))
     }
@@ -87,15 +96,17 @@ calculate.rmse.cmip <- function(reference="era", period=c(1981,2010), variable="
   }
   
   median.rms <- list()
-  for(region in names(store[[1]])) median.rms[[region]] <- median(unlist(lapply(store, function(x) x[[region]]$rms)))
+  for(region in names(X[[1]])) median.rms[[region]] <- median(unlist(lapply(X, function(x) x[[region]]$rms)))
   for(i in start:end){
     store.name <- paste("gcm",i,sep=".")
     for(region in names(store[[1]])){
-      store[[store.name]][[region]]$e <- 
-        (store[[store.name]][[region]]$rms-median.rms[[region]])/median.rms[[region]]
+      X[[store.name]][[region]]$e <- 
+        (X[[store.name]][[region]]$rms-median.rms[[region]])/median.rms[[region]]
     }
   }
-  save(file=store.file, store)
   file.remove(ref.mon.file)
-  invisible(store)
+  browser()
+  statistics[[variable]][[experiment]][[label.period]] <- X
+  save(file=store.file,statistics)
+  invisible(statistics)
 }
