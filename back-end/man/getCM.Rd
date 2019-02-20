@@ -17,7 +17,7 @@ cmip5.urls(experiment='rcp45',varid='tas',
            url="http://climexp.knmi.nl/CMIP5/monthly/", 
            force=FALSE,verbose=FALSE)
 getGCMs(select=1:9,varid='tas',experiment='rcp45',
-        destfile=NULL,path=NULL,verbose=FALSE)
+        destfile=NULL,path=NULL,force=FALSE,verbose=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

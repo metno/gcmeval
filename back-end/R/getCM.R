@@ -7,7 +7,7 @@ getCM <- function(url=NULL,destfile='CM.nc',path=NULL,
       'https://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_ACCESS1-0_historical_000.nc'
   if(!is.null(path)) destfile <- file.path(path,destfile)
   if (file.exists(destfile) & !force) {
-    X <- try(esd::retrieve(destfile,lon=lon,lat=lat,verbose=verbose), silent=TRUE)
+    X <- try(esd::retrieve.default(destfile,lon=lon,lat=lat,verbose=verbose), silent=TRUE)
     if (inherits(X,"try-error")) force <- TRUE # If downloaded file is incomplete, force new download
   }
   if (!file.exists(destfile) | force) {
