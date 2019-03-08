@@ -191,7 +191,9 @@ shinyServer(function(input, output, session) {
   
   # Summary output
   output$value1 <- renderValueBox({
-    colorindex <- ceiling(mean_weightedrank()/length(gcmnames)*length(colorlist))
+    maxrank <- mean(seq(input$ngcm))
+    colorindex <- ceiling((mean_weightedrank()+1-maxrank)/(length(gcmnames)+1-maxrank)*length(colorlist))
+    colorindex <- length(colorlist) + 1 - colorindex # reverse scale
     valueBox(
       formatC(mean_weightedrank(), format="d", big.mark=','),
         paste('Mean weighted rank of selected models'),
