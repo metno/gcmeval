@@ -9,16 +9,17 @@
 \code{calculate.mon.weights} calculates weights based on the latitude and number of days per month that are used in \code{calculate.rmse.cmip}.
 }
 \usage{
-calculate.statistics.cmip(reference="era", period=c(1981,2010),
-          variable="tas", experiment="rcp45", nfiles=5, 
-          path.gcm=NULL, continue=TRUE, path=NULL, 
-          mask="coords.txt", store.file="statistics.rda",
-          stats=c("mean","spatial.sd","corr","rmse"),
-          force=FALSE, verbose=FALSE)
+calculate.statistics.cmip(reference="eraint", period=c(1981,2010),
+                          variable="tas", experiment="rcp45", nfiles=5,
+                          path.gcm=NULL, continue=TRUE, 
+                          path=NULL, mask="coords.txt", 
+                          store.file="statistics.rda",
+                          stats=c("mean","spatial.sd","corr","rmse"),
+                          verbose=FALSE)
 calculate.mon.weights(lon,lat)
 }
 \arguments{
-  \item{reference}{reference data set: "era" (ERAinterim), "eobs", or "cfsr")}
+  \item{reference}{reference data set: "eraint", "era5","eobs", or "cfsr")}
   \item{period}{a subset of years to include in calculations}
   \item{variable}{variable id: 'tas' = temperature, 'pr' = precipitation}
   \item{experiment}{parent experiment of GCM data, e.g Representative Concentration Pathway RCP4.5 ('rcp45') or RCP8.5 ('rcp85')}
@@ -42,7 +43,7 @@ calculate.mon.weights(lon,lat)
 \dontrun{
 calculate.statistics.cmip(reference=NULL, period=c(2071,2100),
                           variable="tas", nfiles=5, continue=TRUE,
-			  mask=NULL, experiment="rcp45", verbose=TRUE)
+          			          experiment="rcp45", verbose=TRUE)
 }
 }
 \keyword{statistics}
