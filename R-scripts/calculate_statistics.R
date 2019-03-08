@@ -16,7 +16,7 @@ get.meta <- FALSE
 get.stats <- TRUE
 
 ## Calculate statistics for CMIP5 data
-opt <- list(ref.tas="era", ref.pr="eobs", verbose=TRUE,
+opt <- list(ref.tas="eraint", ref.pr="eraint", verbose=TRUE,
             it.ref=c(1981,2010), nfiles="all", continue=TRUE,
 	          mask="coords.txt", path=path)
 
@@ -28,8 +28,10 @@ if(get.stats) {
     # ref=FALSE if file is missing, else ref=filename
     if(is.logical(ref)) { 
       if(opt$verbose) print("Download reference data")
-      if(ref.var=="era") {
-        getERA(variable=varid,verbose=opt$verbose)
+      if(ref.var=="eraint") {
+        getERA(variable=varid, verbose=opt$verbose)
+      } else if(ref.var=="era5") {
+        getERA5(variable=varid, python="python3", verbose=opt$verbose)
       } else if(ref.var=="eobs") {
         getEOBS(variable=varid, verbose=opt$verbose)
       }
@@ -63,8 +65,8 @@ if(get.stats) {
                     "; scenario:",rcp))
         calculate.statistics.cmip(reference=ref.var, period=it,
 	        variable=varid, path.gcm=opt$path, nfiles=opt$nfiles,
-	        continue=opt$continue, mask=opt$mask, experiment=rcp,
-	        force=force, verbose=opt$verbose)
+	        continue=!force, mask=opt$mask, experiment=rcp,
+	        verbose=opt$verbose)
       }
     }
   }
