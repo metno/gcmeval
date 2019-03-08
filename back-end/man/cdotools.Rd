@@ -3,7 +3,7 @@
 \alias{cdo.mean}
 \alias{cdo.spatSd}
 \alias{cdo.gridcor}
-
+\alias{cdo.regrid}
 \title{
    CDO calculations in R
 }
@@ -18,6 +18,8 @@ cdo.spatSd(model.file,period=c(1981,2010),mask=NULL,seasonal=FALSE,
            monthly=FALSE,bit=8,verbose=FALSE)
 cdo.gridcor(model.file,reference.file,period=c(1981,2010),mask=NULL,
             seasonal=FALSE,monthly=FALSE,bit=8,verbose=FALSE)
+cdo.regrid(model.file,outfile=NULL,res.lon=2.5,res.lat=2.5,
+           remap="remapcon",bit=8,verbose=FALSE)        
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -34,6 +36,14 @@ cdo.gridcor(model.file,reference.file,period=c(1981,2010),mask=NULL,
   \item{seasonal}{if TRUE return seasonal mean values}
   \item{monthly}{if TRUE return monthly mean values}
   \item{is.temp}{a logical indicating if the input is temperature data, in which case some corrections may be applied}
+  \item{res.lon}{Target longitude resolution}
+  \item{res.lat}{Target latitude resolution}
+  \item{remap}{CDO operator used for horizontal interpolation: 
+    remapbil - Bilinear interpolation
+    remapbic - Bicubic interpolation
+    remapdis - Distance-weighted average remapping
+    remapnn - Nearest neighbor remapping
+    remapcon - First order conservative remapping}
   \item{verbose}{if TRUE display information on progress}
 }
 \value{

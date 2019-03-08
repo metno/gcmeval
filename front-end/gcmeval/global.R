@@ -63,6 +63,7 @@ data(package="gcmeval", "metaextract", envir=environment())
 clean <- function(x) {
   gsub("[[:punct:]]|[[:space:]]","",tolower(x))
 }
+
 gcm.i <- clean(substr(meta$filename,1,
   regexpr("\\.[a-z]{2,3}",meta$filename)-1))
 meta$gcmtag <- gcm.i

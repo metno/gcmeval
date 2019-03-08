@@ -132,12 +132,34 @@ shinyServer(function(input, output, session) {
   
   gcmtableBest <- reactive({
     Z <- cbind(as.character(best()),
-               gsub(".*:","",gcmnames[best()]))
+               gsub(".*:","",gcmnames[best()]),
+               as.character(seq(1,input$ngcm)))
     Z <- as.data.frame(Z)
-    colnames(Z) <- c("#","Model name")
+    colnames(Z) <- c("#","Model name","Rank")
+    return(Z)
+  })
+
+  gcmtableAll <- reactive({
+    Z <- cbind(gsub(":.*","",gcmnames),
+               gsub(".*:","",gcmnames),
+               as.character(weightedrank_all()))
+    Z <- as.data.frame(Z)
+    colnames(Z) <- c("#","Model name","Rank")
     return(Z)
   })
   
+  weightstable <- reactive({
+    Z <- cbind(c("primary region","secondary region",
+                 "temperature", "precipitation",
+                 "all year","dec-feb","mar-apr","jun-jul","sep-nov",
+                 "bias","spatial correlation","spatial variability","CMPI"),
+               c(input$wmreg1,input$wmreg2,
+                 input$wmdt,input$wmdp,
+                 input$wmann,input$wmdjf,input$wmmam,input$wmjja,input$wmson,
+                 input$wmbias,input$wmsc,input$wmsd,input$wmcmpi))
+    colnames(Z) <- c("Parameter","Weights")
+    return(Z)
+  })
   ## Calculations used for text colors
   weightedrank <- reactive({weightedrank_all()[im()]})
   mean_weightedrank <- reactive({mean(weightedrank(),na.rm=TRUE)})
@@ -149,11 +171,50 @@ shinyServer(function(input, output, session) {
   meanRelSpreadIndx_nf <- reactive({as.integer(weightedspread_nf()*10)+1}) #color index based on weighted mean rel. spread for near future
   meanRelSpreadIndx_ff <- reactive({as.integer(weightedspread_ff()*10)+1}) #color index based on weighted mean rel. spread for far future
   
+  # Color list for summary boxes 
+  colorlist <- c("red","orange","yellow","lime","green")
+  
   output$IntroText  <- renderText({
-    paste("This is a tool for selecting and evaluating a subset of climate models from ",
-          "the CMIP5 ensemble based on:<br><br>",
-          "<ul><li>a <b>model skill evaluation</b> of the individual climate models' ability to reproduce the climate of the past, </li>",
-          "<li> and the <b>spread of the regional mean climate change</b> within the sub-ensemble.</li></ul>")
+    paste("This is a tool for selecting and evaluating a subset of climate models from the CMIP5 ensemble.",
+          "Here's how it works:<br><br>",
+          "Step 1) Go to <i>'Model selection'</i> in the sidebar and pick a subset of models.<br>",
+          "Step 2) Go to <i>'Settings for skill evaluation'</i> in the sidebar and select two focus regions, ",
+          "and weights for various meteorological parameters, seasons, and skill scores.<br>",
+          "Step 3) Based on your choices, a weighted <b>model skill evaluation</b> is performed and ",
+          "the climate models are ranked according to their representation of the climate of the past.<br>",
+          "Step 4) Go to <i>'Settings for scatterplot'</i> in the sidebar and select a focus region, season, time horizon, and emission scenario.<br>",
+          "Step 5) Look at the <b>scatterplot of the regional mean climate change</b> to see how your selected subset of models compares to the full CMIP5 ensemble in terms of future climate change.<br><br>",
+          "Now you can modify your subset of models using the information of the skill evaluation and the scatterplot, e.g., exclude climate models that represent ",
+          "the climate of the past poorly, and make sure that your subset preserves the statistical characteristics (the spread and mean) of climate change within the full ensemble.",
+          " Models can be selected in the sidebar (<i>'Model selection'</i>) or by clicking the markers in the scatterplot.")
+  })
+  
+  # Summary output
+  output$value1 <- renderValueBox({
+    colorindex <- ceiling(mean_weightedrank()/length(gcmnames)*length(colorlist))
+    valueBox(
+      formatC(mean_weightedrank(), format="d", big.mark=','),
+        paste('Mean weighted rank of selected models'),
+        icon = NULL,
+        color = colorlist[colorindex])  
+  })
+  
+  output$value2 <- renderValueBox({
+    colorindex <- ceiling(spreadTasRel()*length(colorlist))
+    valueBox(
+      formatC(paste(round(spreadTasRel()*100),"%"), format="d", big.mark=','),
+        paste('Relative spread of temperature change'),
+        icon = NULL,
+        color = colorlist[colorindex])  
+  })
+
+  output$value3 <- renderValueBox({
+    colorindex <- ceiling(spreadPrRel()*length(colorlist))
+    valueBox(
+      formatC(paste(round(spreadPrRel()*100),"%"), format="d", big.mark=','),
+        paste('Relative spread of precipitation change'),
+        icon = NULL,
+        color = colorlist[colorindex])  
   })
   
   output$DisclaimerText <- renderText({
@@ -175,16 +236,28 @@ shinyServer(function(input, output, session) {
           "  of  ",length(gcmnames),"</b></font>.<br>",sep="")
   })
   
+  output$WeightsTable <- renderTable({
+    weightstable()
+  })
+  
   output$ModelsTable <- DT::renderDataTable({
-    datatable(gcmtable(), caption=HTML("<font size=+1 color='black'><b>Selected models</b></font>"), 
+    bg <- styleEqual(seq(1,length(gcmnames),0.5), 
+                     two.colors(n=length(gcmnames)*2-1, start="green",
+                                end="red", middle = "orange"))
+    
+    if(input$tabletype=="Selected models") {
+      datatable(gcmtable(), caption=HTML("<font size=+1><b>Selected models</b></font>"), 
               options=list(dom='t',pageLength=input$ngcm), 
-              rownames=FALSE) %>% formatStyle(
-                'Rank',
-                target = 'row',
-                backgroundColor = styleEqual(seq(1,length(gcmnames),0.5), 
-                                  two.colors(n=length(gcmnames)*2-1, start="green",
-                                              end="red", middle = "orange"))
-    )
+              rownames=FALSE) %>% formatStyle('Rank', target = 'row',  backgroundColor = bg)
+    } else if (input$tabletype=="Best performing models") {
+      datatable(gcmtableBest(), caption=HTML("<font size=+1><b>Best performing models</b></font>"), 
+                options=list(dom='t',pageLength=input$ngcm), 
+                rownames=FALSE) %>% formatStyle('Rank', target = 'row',  backgroundColor = bg)
+    } else {
+      datatable(gcmtableAll(), caption=HTML("<font size=+1><b>All models</b></font>"), 
+                options=list(dom='t',pageLength=length(gcmnames)), 
+                rownames=FALSE) %>% formatStyle('Rank', target = 'row',  backgroundColor = bg)
+    }
   })
 
   output$ModelsTableBest <- DT::renderDataTable({
@@ -195,18 +268,6 @@ shinyServer(function(input, output, session) {
   })
   
   textOut <- reactive({
-    legcols <- two.colors(n=11, start="red", end="green", middle="orange") 
-    #if(input$weighted) {
-    #  txt <- paste("The weighted mean spread of the selected models for all ",
-    #                "regions, seasons and variables is <br><br>",
-    #               "<font size = +1, font color=\"",
-    #               legcols[meanRelSpreadIndx_ff()],"\"><b>", round(weightedspread_nf()*100),
-    #               "%</b></font>  for the <b>near future</b> and <br>",
-    #               "<font size = +1, font color=\"",
-    #               legcols[meanRelSpreadIndx_ff()],"\"><b>", round(weightedspread_ff()*100), 
-    #               "%</b></font> for the <b>far future</b> <br><br> compared to the spread ",
-    #               "of the whole ensemble.<br><br>",sep="")        
-    #} else {
       txt <- paste("The spread of the selected models compared to the spread ",
                    "of the whole ensemble is <br><br>",
             "<font size = +1, font color=\"",legcols[spreadTasIndx()],"\"><b>",
@@ -252,7 +313,7 @@ shinyServer(function(input, output, session) {
     axis(2,at=pretty(par("yaxp")[1:2],n=5),col='grey50')
     grid()
     lines(region$lon,region$lat,col="blue",lwd=1.5,lty=1)
-  }, width=200,height=200*0.6)#width=250, height=175)
+  }, width=190,height=130)#width=250, height=175)
   
   ## Output: map 2
   output$mapm2 <- renderPlot({
@@ -274,7 +335,7 @@ shinyServer(function(input, output, session) {
       axis(2,at=pretty(par("yaxp")[1:2],n=5),col='grey50')
       grid()
       lines(region$lon,region$lat,col="blue",lwd=1.5,lty=1)
-    }}, width=200,height=200*0.6)#width=250, height=175)
+    }}, width=190,height=130)#width=250, height=175)
   
   ## Output: map for scatterplot region selection
   output$map <- renderPlot({
@@ -295,7 +356,7 @@ shinyServer(function(input, output, session) {
     axis(2,at=pretty(par("yaxp")[1:2],n=5),col='grey50')
     grid()
     lines(region$lon,region$lat,col="blue",lwd=1.5,lty=1)
-  }, width=200,height=200*0.6)#width=250, height=175)
+  }, width=190,height=130)#width=250, height=175)
   
   ## Output: scatterplot of temperature and precip. change 
   output$dtdpr <- renderPlotly({
@@ -330,7 +391,7 @@ shinyServer(function(input, output, session) {
     p <- plot_ly(data.frame(x=dtas(),y=dpr()), x=~x, y=~y, type="scatter", mode="markers",
             marker=list(color=clr(), size=sz(), line=list(color=clr.line(), width=1.2)),
             text=paste(gcmnames,"\nWeighted rank:",weightedrank_all()), source="A",
-            name="Selected GCMs") %>%
+            name="Selected models") %>%
     add_trace(x=mean(dtas()), y=mean(dpr()), name="mean of all",
               marker=list(symbol="star", color='yellow', size=10, 
                           line=list(color='black', width=1))) %>%
