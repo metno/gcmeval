@@ -177,16 +177,18 @@ shinyServer(function(input, output, session) {
   output$IntroText  <- renderText({
     paste("This is a tool for selecting and evaluating a subset of climate models from the CMIP5 ensemble.",
           "Here's how it works:<br><br>",
-          "Step 1) Go to <i>'Model selection'</i> in the sidebar and pick a subset of models.<br>",
-          "Step 2) Go to <i>'Settings for skill evaluation'</i> in the sidebar and select two focus regions, ",
+          "Step 1) Go to <i>'Settings for skill evaluation'</i> in the sidebar and select two focus regions ",
           "and weights for various meteorological parameters, seasons, and skill scores.<br>",
-          "Step 3) Based on your choices, a weighted <b>model skill evaluation</b> is performed and ",
+          "Step 2) Based on your choices, a weighted <b>model skill evaluation</b> is performed and ",
           "the climate models are ranked according to their representation of the climate of the past.<br>",
-          "Step 4) Go to <i>'Settings for scatterplot'</i> in the sidebar and select a focus region, season, time horizon, and emission scenario.<br>",
-          "Step 5) Look at the <b>scatterplot of the regional mean climate change</b> to see how your selected subset of models compares to the full CMIP5 ensemble in terms of future climate change.<br><br>",
-          "Now you can modify your subset of models using the information of the skill evaluation and the scatterplot, e.g., exclude climate models that represent ",
-          "the climate of the past poorly, and make sure that your subset preserves the statistical characteristics (the spread and mean) of climate change within the full ensemble.",
-          " Models can be selected in the sidebar (<i>'Model selection'</i>) or by clicking the markers in the scatterplot.")
+          "Step 3) Go to <i>'Settings for scatterplot'</i> in the sidebar and select a focus region, season, time horizon, and emission scenario.<br>",
+          "Step 4) Look at the <b>scatterplot of the regional mean climate change</b> which shows the projected regional mean change in temperature and precipitation.",
+          "Step 5) Now go to <i>'Model selection'</i> in the sidebar and pick a subset of models ",
+          "using the information of the skill evaluation and the scatterplot.<br><br>",
+          "Our suggested approach is to exclude climate models that represent the climate of the past very poorly. ",
+          "Then, pick a subset out of the well performing models that preserves the statistical characteristics (the spread and mean) of climate change of the full ensemble.",
+          "Small changes in the weights and regions of interest can drastically change the outcome, ",
+          "so make sure to try some different settings before picking a subset of models.")
   })
   
   # Summary output
@@ -249,16 +251,43 @@ shinyServer(function(input, output, session) {
     
     if(input$tabletype=="Selected models") {
       datatable(gcmtable(), caption=HTML("<font size=+1><b>Selected models</b></font>"), 
-              options=list(dom='t',pageLength=input$ngcm), 
-              rownames=FALSE) %>% formatStyle('Rank', target = 'row',  backgroundColor = bg)
+              options=list(dom='t',
+                           pageLength=input$ngcm,
+                           rownames=FALSE#, 
+                           #extensions = 'Buttons',
+			                     #buttons=list(list(extend='copy'),
+			                     #             list(extend='pdf',
+			                     #                  filename='CurrentTable',
+			                     #                  title="Current Table",
+			                     #                  header=FALSE))
+			                     )) %>%
+                formatStyle('Rank', target = 'row', backgroundColor = bg)
     } else if (input$tabletype=="Best performing models") {
-      datatable(gcmtableBest(), caption=HTML("<font size=+1><b>Best performing models</b></font>"), 
-                options=list(dom='t',pageLength=input$ngcm), 
-                rownames=FALSE) %>% formatStyle('Rank', target = 'row',  backgroundColor = bg)
+      datatable(gcmtableBest(), caption=HTML("<font size=+1><b>Best performing models</b></font>"),
+                rownames=FALSE,#, extensions="Buttons",
+                options=list(dom='t',pageLength=input$ngcm#,
+                             #buttons=list(list(extend='copy'),
+                             #             list(extend='pdf',
+                             #                  filename='CurrentTable',
+                             #                  title="Current Table",
+                             #                  header=FALSE))
+                             )) %>% 
+        formatStyle('Rank', target = 'row',  backgroundColor = bg)
     } else {
-      datatable(gcmtableAll(), caption=HTML("<font size=+1><b>All models</b></font>"), 
-                options=list(dom='t',pageLength=length(gcmnames)), 
-                rownames=FALSE) %>% formatStyle('Rank', target = 'row',  backgroundColor = bg)
+      datatable(
+      #DT::renderDataTable # use with buttons
+        gcmtableAll(), caption=HTML("<font size=+1><b>All models</b></font>"),
+                rownames=FALSE, 
+                #extensions="Buttons",
+                options=list(dom='t',
+                             pageLength=length(gcmnames)#,
+                             #buttons=list(list(extend='copy'),
+                             #             list(extend='pdf',
+                             #                  filename='CurrentTable',
+                             #                  title="Current Table",
+                             #                  header=FALSE))
+                            )) %>% 
+        formatStyle('Rank', target = 'row',  backgroundColor = bg)
     }
   })
 
