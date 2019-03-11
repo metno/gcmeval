@@ -402,12 +402,12 @@ shinyServer(function(input, output, session) {
               marker=list(symbol='star', color='red', size=10,
                           line=list(color='black', width=1))) %>%
     layout(p, title=paste("Present day (1981-2010) to",tolower(input$period)),
-           xaxis=list(title="Temperature change (deg C)",range=c(-5,5)),
-           yaxis=list(title="Precipitation change (mm/day)",range=c(-1,1)),
+           xaxis=list(title="Temperature change (deg C)",range=input$xlim),
+           yaxis=list(title="Precipitation change (mm/day)",range=input$ylim),
            showlegend=TRUE, 
            legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=1))
   })
-
+  
   output$clickevent <- renderPrint({
     event_data("plotly_click", source="A")
   })
@@ -429,6 +429,26 @@ shinyServer(function(input, output, session) {
     }
   })
 
+  ## This doesn't work. Don't know how to access the plot (p) after rendering it
+  ## When changing range in plotly scatterplot, update xlim and ylim
+  #selectedPlot <- reactive({
+  #  browser()
+  #  p <- plotlyOutput('dtdpr')
+  #  plotly_data()
+  #  output$dtdpr
+  #})
+  #
+  #observe({
+  #  d <- event_data(event="plotly_relayout", source="A")
+  #  if(!is.null(d)) {
+  #    p <- selectedPlot()
+  #    xlim <- p$x$layoutAttrs[[1]]$xaxis$range
+  #    ylim <- p$x$layoutAttrs[[1]]$yaxis$range
+  #    updateSliderInput(session, inputId = "xlim", value = xlim)
+  #    updateSliderInput(session, inputId = "ylim", value = ylim)
+  #  }
+  #})
+  
   # When changing RCP, change list of GCMs. NO NEED TO DO THIS!
   # Only simulations available for both RCP4.5 and RCP8.5 are included.
   #observeEvent(input$rcp, {
@@ -471,5 +491,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$gcms,{
     js$resetClick()
   })
+  
+  
   
 })

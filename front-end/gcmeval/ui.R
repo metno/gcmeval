@@ -47,7 +47,7 @@ dashboardPage(
                     "regionwm1", 
                     label = "Primary focus region",
                     choices = regionlist,
-                    selected = "North Europe [NEU:11]"
+                    selected = "Alaska/N.W. Canada [ALA:1]"
                   ),
                   selectInput(
                     "wmreg1",
@@ -66,7 +66,7 @@ dashboardPage(
                     "regionwm2",
                     label = "Secondary focus region",
                     choices = regionlist,
-                    selected = "Central Europe [CEU:12]"
+                    selected = "Amazon [AMZ:7]"
                   ),
                   selectInput(
                     "wmreg2",
@@ -204,7 +204,7 @@ dashboardPage(
                 "region",
                 label = "Focus region",
                 choices = regionlist,
-                selected = "North Europe [NEU:11]"
+                selected = "Global"
               ),
               plotOutput("map", width = '100%', height = '130px'),
               br(),
@@ -226,9 +226,21 @@ dashboardPage(
                 label = "Emission scenario",
                 choices = c("RCP 4.5", "RCP 8.5"),
                 selected = "RCP 4.5"
-              )
+              ),
+              sliderInput("xlim", 
+                          label = "Temperature range",
+                          min = -20, 
+                          max = 20,
+                          step = 0.1,
+                          value = c(-5,5)),
+              sliderInput("ylim", 
+                          label = "Precipitation range",
+                          min = -4, 
+                          max = 4,
+                          step = 0.1,
+                          value = c(-1,1))
       ),
-      menuItem("Advanced options", tabName="advanced", icon=icon("cog"),
+      menuItem("Advanced settings", tabName="advanced", icon=icon("cog"),
                selectInput(
                  "reference", 
                  label = "Reference data set",
