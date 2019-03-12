@@ -179,7 +179,7 @@ dashboardPage(
                 ),
                 selectInput(
                   "wmsd",
-                  label = "Spatial variability",
+                  label = "Spatial sd ratio",
                   choices = c(
                     "Not important (0)" = 0,
                     "Important (1)" = 1,
@@ -189,7 +189,7 @@ dashboardPage(
                 ),
                 selectInput(
                   "wmcmpi",
-                  label = HTML("CMPI"),
+                  label = HTML("RMSE"),
                   choices = c(
                     "Not important (0)" = 0,
                     "Important (1)" = 1,
@@ -242,18 +242,18 @@ dashboardPage(
       ),
       menuItem("Advanced settings", tabName="advanced", icon=icon("cog"),
                selectInput(
-                 "reference", 
-                 label = "Reference data set",
+                 "tasref", 
+                 label = "Reference data set, temperature",
                  choices = c("ERAinterim"),
                  selected = "ERAinterim"
                ),
                selectInput(
-                 "scenarios",
-                 label = "Emission scenarios",
-                 choices = c("RCP4.5 & RCP8.5","RCP4.5","RCP8.5"),
-                 selected = "both"
+                 "prref", 
+                 label = "Reference data set, precipitation",
+                 choices = c("ERAinterim"),
+                 selected = "ERAinterim"
                ),
-               menuItem("Exlude climate models", tabname="ensemble", icon=NULL,
+               menuItem("Exclude climate models", tabname="ensemble", icon=NULL,
                 checkboxGroupInput(
                   "baseensemble",
                   label = "Full ensemble",
@@ -292,13 +292,17 @@ dashboardPage(
           status = 'primary',
           collapsible = TRUE,
           collapsed = FALSE,
-          column(12,
+          column(8,
                  selectInput("tabletype", 
                              label="Show ranking of ensemble",
                              choices=c("Selected models","Best performing models","All models"))),
           column(12,
-                 DT::dataTableOutput("ModelsTable"),
-                 br())
+                 column(8,
+                  DT::dataTableOutput("ModelsTable"),
+                  br()),
+                 column(4,
+                  DT::dataTableOutput("WeightsTable"),
+                  br()))
           #column(6,
           #       DT::dataTableOutput("ModelsTableBest"),
           #       br())
@@ -313,19 +317,26 @@ dashboardPage(
           width = '100%',
           collapsible = TRUE,
           collapsed = FALSE,
-          column(12,
-                 column(
+            column(
                    12,
                    checkboxInput("show.ranking", 
                                  label=HTML("<font size=-1<i>Show model ranking as color scale</i></font>"), 
                                  value=FALSE),
                    br(),
                    plotlyOutput("dtdpr", width = '100%', height = 550),
-                   br(),
                    br()
-                 )
+            )#,
+            #column(
+            #  12,
+            #  checkboxInput("show.ranking", 
+            #                label=HTML("<font size=-1<i>Show model ranking as color scale</i></font>"), 
+            #                value=FALSE),
+            #  br(),
+            #  plotlyOutput("dtdpr", width = '100%', height = 550),
+            #  br(),
+            #  br()
+          #)
           )
-        )
       ),
       column(
         12,

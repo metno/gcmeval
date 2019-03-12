@@ -149,11 +149,13 @@ shinyServer(function(input, output, session) {
   })
   
   weightstable <- reactive({
-    Z <- cbind(c("primary region","secondary region",
+    Z <- cbind(c(paste("primary region: ",input$regionwm1),
+                 paste("secondary region:",input$regionwm2),
                  "temperature", "precipitation",
                  "all year","dec-feb","mar-apr","jun-jul","sep-nov",
-                 "bias","spatial correlation","spatial variability","CMPI"),
-               c(input$wmreg1,input$wmreg2,
+                 "bias","spatial correlation","spatial sd ratio","RMSE"),
+               c(input$wmreg1,
+                 input$wmreg2,
                  input$wmdt,input$wmdp,
                  input$wmann,input$wmdjf,input$wmmam,input$wmjja,input$wmson,
                  input$wmbias,input$wmsc,input$wmsd,input$wmcmpi))
@@ -182,7 +184,7 @@ shinyServer(function(input, output, session) {
           "Step 2) Based on your choices, a weighted <b>model skill evaluation</b> is performed and ",
           "the climate models are ranked according to their representation of the climate of the past.<br>",
           "Step 3) Go to <i>'Settings for scatterplot'</i> in the sidebar and select a focus region, season, time horizon, and emission scenario.<br>",
-          "Step 4) Look at the <b>scatterplot of the regional mean climate change</b> which shows the projected regional mean change in temperature and precipitation.",
+          "Step 4) Look at the <b>scatterplot of the regional mean climate change</b> which shows the projected regional mean change in temperature and precipitation.<br>",
           "Step 5) Now go to <i>'Model selection'</i> in the sidebar and pick a subset of models ",
           "using the information of the skill evaluation and the scatterplot.<br><br>",
           "Our suggested approach is to exclude climate models that represent the climate of the past very poorly. ",
@@ -240,8 +242,11 @@ shinyServer(function(input, output, session) {
           "  of  ",length(gcmnames),"</b></font>.<br>",sep="")
   })
   
-  output$WeightsTable <- renderTable({
-    weightstable()
+  output$WeightsTable <- DT::renderDataTable({
+    datatable(weightstable(), caption=HTML("<font size=+0><b>Summary of weights</b></font>"),
+                                options=list(dom='t',
+                                 pageLength=15,
+                                 rownames=FALSE))
   })
   
   output$ModelsTable <- DT::renderDataTable({
@@ -250,42 +255,22 @@ shinyServer(function(input, output, session) {
                                 end="red", middle = "orange"))
     
     if(input$tabletype=="Selected models") {
-      datatable(gcmtable(), caption=HTML("<font size=+1><b>Selected models</b></font>"), 
-              options=list(dom='t',
-                           pageLength=input$ngcm,
-                           rownames=FALSE#, 
-                           #extensions = 'Buttons',
-			                     #buttons=list(list(extend='copy'),
-			                     #             list(extend='pdf',
-			                     #                  filename='CurrentTable',
-			                     #                  title="Current Table",
-			                     #                  header=FALSE))
-			                     )) %>%
+      datatable(gcmtable(), caption=HTML("<font size=+1><b>Ranking of the selected models</b></font>"), 
+                rownames=FALSE,
+                options=list(dom='t', pageLength=input$ngcm)) %>%
                 formatStyle('Rank', target = 'row', backgroundColor = bg)
     } else if (input$tabletype=="Best performing models") {
-      datatable(gcmtableBest(), caption=HTML("<font size=+1><b>Best performing models</b></font>"),
-                rownames=FALSE,#, extensions="Buttons",
-                options=list(dom='t',pageLength=input$ngcm#,
-                             #buttons=list(list(extend='copy'),
-                             #             list(extend='pdf',
-                             #                  filename='CurrentTable',
-                             #                  title="Current Table",
-                             #                  header=FALSE))
-                             )) %>% 
+      datatable(gcmtableBest(), caption=HTML("<font size=+1><b>Ranking of the best performing models</b></font>"),
+                rownames=FALSE,
+                options=list(dom='t',pageLength=input$ngcm)) %>% 
         formatStyle('Rank', target = 'row',  backgroundColor = bg)
     } else {
       datatable(
       #DT::renderDataTable # use with buttons
-        gcmtableAll(), caption=HTML("<font size=+1><b>All models</b></font>"),
+        gcmtableAll(), caption=HTML("<font size=+1><b>Ranking of all models</b></font>"),
                 rownames=FALSE, 
-                #extensions="Buttons",
                 options=list(dom='t',
                              pageLength=length(gcmnames)#,
-                             #buttons=list(list(extend='copy'),
-                             #             list(extend='pdf',
-                             #                  filename='CurrentTable',
-                             #                  title="Current Table",
-                             #                  header=FALSE))
                             )) %>% 
         formatStyle('Rank', target = 'row',  backgroundColor = bg)
     }
@@ -430,7 +415,10 @@ shinyServer(function(input, output, session) {
               name="mean of selection",
               marker=list(symbol='star', color='red', size=10,
                           line=list(color='black', width=1))) %>%
-    layout(p, title=paste("Present day (1981-2010) to",tolower(input$period)),
+    layout(p, title=paste0(input$season," climate change for the region ",input$region,"\n",
+                          "Present day (1981-2010) to ",tolower(input$period),", ",
+                          input$rcp),
+           font=list(size=9),
            xaxis=list(title="Temperature change (deg C)",range=input$xlim),
            yaxis=list(title="Precipitation change (mm/day)",range=input$ylim),
            showlegend=TRUE, 
