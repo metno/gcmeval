@@ -122,16 +122,18 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
   if(continue && file.exists(store.file)) {
     gcms <- paste("gcm",seq_along(urls),sep=".")
     ok <- gcms %in% names(X)
-    ok[ok] <- sapply(gcms[ok], function(gcm) {
-      sum(stats %in% names(X[[gcm]]$global))==length(stats)})
+    ok[ok] <- unlist(sapply(gcms[ok], function(gcm) {
+      sum(stats %in% names(X[[gcm]]$global))==length(stats)}))
     if(any(ok) & "rmse" %in% stats) {
-      ok[ok] <- sapply(gcms[ok], function(gcm) {
-        reference %in% names(X[[gcm]]$global$rmse)})  
+      ok[ok] <- unlist(sapply(gcms[ok], function(gcm) {
+        reference %in% names(X[[gcm]]$global$rmse)}))
     }
     if(any(ok) & "corr" %in% stats) {
-      ok[ok] <- sapply(gcms[ok], function(gcm) {
-        reference %in% names(X[[gcm]]$global$corr)})  
+      ok[ok] <- unlist(sapply(gcms[ok], function(gcm) {
+        reference %in% names(X[[gcm]]$global$corr)}))
     }
+    nok <- try(!ok)
+    if(inherits(nok,"try-error")) browser()
     if(any(!ok)) {
       start <- as.numeric(head(sub('.*\\.', '', gcms[!ok], perl=TRUE),n=1))
     } else {

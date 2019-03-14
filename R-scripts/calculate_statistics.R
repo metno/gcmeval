@@ -55,8 +55,8 @@ if(get.meta) {
 # Calculate regional statistics for CMIP5 
 # (spatial mean, sd, corr, seasonal cycle rmse, cmpi)
 if(get.stats) {
-  force <- TRUE
-  for (varid in c("pr","tas")) {
+  force <- FALSE
+  for (varid in c("tas","pr")) {
     print(paste("Calculate annual cycle statistics of",varid))
     ref.var <- switch(varid, "tas"=opt$ref.tas, "pr"=opt$ref.pr)#
     for (it in list(opt$it.ref,c(2071,2100),c(2021,2050))) {
@@ -67,6 +67,7 @@ if(get.stats) {
 	        variable=varid, path.gcm=opt$path, nfiles=opt$nfiles,
 	        continue=!force, mask=opt$mask, experiment=rcp,
 	        verbose=opt$verbose)
+        force <- FALSE
       }
     }
   }
