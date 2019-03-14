@@ -3,7 +3,7 @@ get.srex.region <- function(destfile,region=NULL,print.srex=FALSE,verbose=FALSE)
   if(verbose) print("get.srex.region")
   home <- system("echo $HOME",intern=TRUE)
   shape <-  get.shapefile("referenceRegions.shp")
-  X <- esd::retrieve(destfile,lon=NULL,lat=NULL,verbose=verbose)
+  X <- esd::retrieve.ncdf4(destfile,lon=NULL,lat=NULL,verbose=verbose)
   srex <- list()
   if(is.null(region)){
     for (i in 1:length(levels(shape$LAB))){

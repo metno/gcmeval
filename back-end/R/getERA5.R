@@ -11,43 +11,45 @@ getERA5 <- function(variable,start=1979,end=2018,griddes="cmip_1.25deg_to_2.5deg
     varID <- "167.128"
     stream <- "moda"
     type <- "an"
-    commands <- c("-f","nc","-copy","-remapcon","-chname")
-    input <- c("","","",griddes,"2t,tas")
+    cmd1 <- "-chname,t2,tas -setgridtype,regular"
+    cmd2 <- "-remapcon"
+    input2 <- griddes
   } else if(any(match(c("pre","prc","prec","precipitation","pr"),variable,nomatch=0))) {
     if(verbose) print("variable: precipitation")
     varID <- "228.128"
     stream <- "moda"
     type <- "an"#"fc"
-    commands <- c("-f","nc","-copy","-monmean","-remapcon","-chname")#"-monsum","-remapcon","-chname")
-    input <- c("","","","",griddes,"2t,tas")
+    cmd1 <- "-chname,tp,pr -setgridtype,regular"
+    cmd2 <- "-remapcon"
+    input2 <- griddes
   }
-  if(is.null(destfile)) destfile <- paste0("era5_monthly_",paste(start,end,sep="-"),"_",variable,".grib")
-  outfile <- paste(gsub('.{5}$', '',destfile),"2.5deg",'nc',sep=".")
+  if(is.null(destfile)) destfile <- paste0("era5_monthly_",paste(start,end,sep="-"),"_",variable,".nc")
+  outfile <- gsub('.nc$', '.2.5deg.nc',destfile)
   if(!file.exists(outfile)|force) {
     if(verbose) print("NetCDF file with 2.5deg data does not exist.")
     if(!file.exists(destfile)) {
-      if(verbose) print("GRIB file does not exist. Download with cdsapi Python tool.")
+      if(verbose) print("NetCDF file does not exist. Download with cdsapi Python tool.")
       python.getEra5(start, end, varID, type, stream, destfile, 
-                     python=python, verbose=verbose)
+                     cdocmd=cmd1, python=python, verbose=verbose)
     }
     if(verbose) print("Regrid with CDO and save as netCDF.")
-    cdo.command(commands,input,destfile,outfile)
+    cdo.command(cmd2,input2,destfile,outfile)
   }
   if(verbose) print("Retrieve data from netCDF file.")
-  X <- esd::retrieve(outfile)
+  #X <- esd::retrieve.ncdf4(outfile)
   cid <- getatt(outfile)
   if(verbose) print("Calculate area mean and sd.")
   #cid$area.mean <- esd::aggregate.area(X,FUN='mean')
   #cid$area.sd <- esd::aggregate.area(X,FUN='sd')
   cid$url <- NA
-  cid$dates <- paste(range(zoo::index(X)),collapse=",")
+  #cid$dates <- paste(range(zoo::index(X)),collapse=",")
   if(verbose) print("Get information about the model and netCDF file.")
   ncid <- ncdf4::nc_open(outfile)
   model <- ncdf4::ncatt_get(ncid,0)
   ncdf4::nc_close(ncid)
   cid$model <- model
   cid$project_id <- cid$model$project_id
-  cid$srex <- get.srex.region(outfile,region=NULL,print.srex=FALSE,verbose=FALSE)
+  #cid$srex <- get.srex.region(outfile,region=NULL,print.srex=FALSE,verbose=FALSE)
   if(verbose) print("--- end getERA5 ---")
-  return(cid)
+  invisible(cid)
 }

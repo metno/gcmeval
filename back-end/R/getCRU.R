@@ -22,16 +22,16 @@ getCRU <- function(username,passwd,variable="tmp",version="4.00",
     input <- c("","","",griddes)
     cdo.command(commands,input,destfile,outfile) 
   }
-  X <- esd::retrieve(outfile)
+  #X <- esd::retrieve.ncdf4(outfile)
   cid <- getatt(outfile)
-  cid$area.mean <- esd::aggregate.area(X,FUN='mean')
-  cid$area.sd <- esd::aggregate.area(X,FUN='sd')
+  #cid$area.mean <- esd::aggregate.area(X,FUN='mean')
+  #cid$area.sd <- esd::aggregate.area(X,FUN='sd')
   cid$url <- NA
-  cid$dates <- paste(range(zoo::index(X)),collapse=",")
+  #cid$dates <- paste(range(zoo::index(X)),collapse=",")
   ncid <- ncdf4::nc_open(outfile)
   model <- ncdf4::ncatt_get(ncid,0)
   ncdf4::nc_close(ncid)
   cid$model <- model
   cid$project_id <- cid$model$project_id
-  return(cid)
+  invisible(cid)
 }
