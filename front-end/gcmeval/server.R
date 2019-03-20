@@ -5,7 +5,16 @@ source("global.R")
 shinyServer(function(input, output, session) {
 
   stats <- reactive({
-    stats.both[[clean(input$rcp)]]
+    X <- stats.both[[clean(input$rcp)]]
+    for(var in names(X)) {
+      for(period in names(X[[var]])) {
+        n <- names(X[[var]][[period]])
+        gcms <- n[grepl("gcm",n)][gcmnames %in% input$baseensemble]
+        i <- which(n %in% gcms | !grepl("gcm",n))
+        X[[var]][[period]] <- X[[var]][[period]][i]
+      }
+    }
+    return(X)
   })
 
   gcmst <- reactive({
@@ -23,7 +32,8 @@ shinyServer(function(input, output, session) {
   })
   
   im <- reactive({
-    as.numeric(gsub(":.*","",input$gcms))
+    #as.numeric(gsub(":.*","",input$gcms))
+    which(input$baseensemble %in% input$gcms)
   })
 
   ## Region selection for scatterplot
@@ -37,7 +47,7 @@ shinyServer(function(input, output, session) {
     return(y)
   }
   Region1 <- reactive({ 
-    get.region(input$regionwm1) 
+    get.region(input$regionwm1)
   })
   Region2 <- reactive({ 
     get.region(input$regionwm2) 
@@ -68,8 +78,8 @@ shinyServer(function(input, output, session) {
   })
   
   weightedranks_all <- reactive({
-    W <- array(NA,c(length(gcmnames),4))
-    for (i in 1:length(gcmnames)) {
+    W <- array(NA,c(length(input$baseensemble),4))
+    for (i in 1:length(input$baseensemble)) {
       for (j in 1:4) {
         W[i,j] <- (seasweightvec() %*% seas_varweightedranks()[i,,j,] %*% regweightvec())
       }
@@ -80,7 +90,9 @@ shinyServer(function(input, output, session) {
   metweightvec <- reactive({as.numeric(c(input$wmbias,input$wmsd,input$wmsc,input$wmcmpi))})
   weightedrank_all <- reactive({rank(weightedranks_all() %*% metweightvec())})
   
-  best <- reactive({order(weightedrank_all())[1:input$ngcm]})
+  best <- reactive({
+    order(weightedrank_all())[1:input$ngcm]
+  })
 
   ## Weighted spread calculations
   dtasSpread <- reactive({spread.all(stats(),varid="tas",Regions=Regionlist(),im=NULL)})
@@ -151,7 +163,7 @@ shinyServer(function(input, output, session) {
   # Generate table with selected GCMs and their ranking
   gcmtable <- reactive({
     Z <- cbind(as.character(im()),
-               gsub(".*:","",gcmnames[im()]),
+               gsub(".*:","",input$baseensemble[im()]),
                as.character(weightedrank()))
     Z <- as.data.frame(Z)
     colnames(Z) <- c("#","Model name","Rank")
@@ -160,7 +172,7 @@ shinyServer(function(input, output, session) {
   
   gcmtableBest <- reactive({
     Z <- cbind(as.character(best()),
-               gsub(".*:","",gcmnames[best()]),
+               gsub(".*:","",input$baseensemble[best()]),
                as.character(seq(1,input$ngcm)))
     Z <- as.data.frame(Z)
     colnames(Z) <- c("#","Model name","Rank")
@@ -168,8 +180,8 @@ shinyServer(function(input, output, session) {
   })
 
   gcmtableAll <- reactive({
-    Z <- cbind(gsub(":.*","",gcmnames),
-               gsub(".*:","",gcmnames),
+    Z <- cbind(gsub(":.*","",input$baseensemble),
+               gsub(".*:","",input$baseensemble),
                as.character(weightedrank_all()))
     Z <- as.data.frame(Z)
     colnames(Z) <- c("#","Model name","Rank")
@@ -203,7 +215,7 @@ shinyServer(function(input, output, session) {
   
   # Color list for summary boxes 
   colorlist <- c("red","orange","yellow","lime","green")
-  
+
   output$IntroText  <- renderText({
     paste("This is a tool for selecting and evaluating a subset of climate models from the CMIP5 ensemble.",
           "Here's how it works:<br><br>",
@@ -212,8 +224,8 @@ shinyServer(function(input, output, session) {
           "Step 2) Based on your choices, a weighted <b>model skill evaluation</b> is performed and ",
           "the climate models are ranked according to their representation of the climate of the past.<br>",
           "Step 3) Go to <i>'Settings for scatterplots'</i> in the sidebar and select a season, time horizon, and emission scenario.<br>",
-          "Step 4) Look at the <b>spread of the regional mean climate change</b> which shows the projected regional mean change ",
-          "in temperature and precipitation for the two focus regions as scatterplots.<br>",
+          "Step 4) Look at the <b>spread of the regional mean climate change</b> which shows scatterplots of ",
+          "the projected regional mean change in temperature and precipitation for the two focus regions.<br>",
           "Step 5) Now you can go to <i>'Model selection'</i> in the sidebar and pick a subset of models ",
           "using the information of the skill evaluation and the scatterplots.<br><br>",
           "Our suggested approach is to exclude climate models that represent the climate of the past very poorly. ",
@@ -222,27 +234,6 @@ shinyServer(function(input, output, session) {
           "so make sure to try some different settings before picking a subset of models.")
   })
   
-  # Summary output
-  #output$value1 <- renderValueBox({
-  #  maxrank <- mean(seq(input$ngcm))
-  #  colorindex <- ceiling((mean_weightedrank()+1-maxrank)/(length(gcmnames)+1-maxrank)*length(colorlist))
-  #  colorindex <- length(colorlist) + 1 - colorindex # reverse scale
-  #  valueBox(
-  #    formatC(mean_weightedrank(), format="d", big.mark=','),
-  #      paste('Mean weighted rank of selected models'),
-  #      icon = NULL,
-  #      color = colorlist[colorindex])  
-  #})
-  
-  #output$value2 <- renderValueBox({
-  #  colorindex <- ceiling(spreadTasRel1()*length(colorlist))
-  #  valueBox(
-  #    formatC(paste(round(spreadTasRel1()*100),"%"), format="d", big.mark=','),
-  #      paste('Relative spread of temperature change'),
-  #      icon = NULL,
-  #      color = colorlist[colorindex])  
-  #})
-
   output$DisclaimerText <- renderText({
     paste("<i>Disclaimer: This is a prototype and should not be used as a basis for decision making.</i>")
   })
@@ -254,14 +245,6 @@ shinyServer(function(input, output, session) {
           "based on your choices.</i>")
   })
   
-  ## Output: text about ranking
-  output$MetricText  <- renderText({
-    paste("The mean weighted model rank of the selected models is  ",
-          "<font size = +1, font color=\"",
-          legcolsrank[meanRelMetricsIndx()],"\"><b> rank ", round(mean_weightedrank()), 
-          "  of  ",length(gcmnames),"</b></font>.<br>",sep="")
-  })
-  
   output$WeightsTable <- DT::renderDataTable({
     datatable(weightstable(), 
               caption="",#HTML("<font size=+0><b>Summary of weights</b></font>"),
@@ -271,30 +254,33 @@ shinyServer(function(input, output, session) {
               escape=FALSE)
   })
   
+  bg <- reactive({
+    styleEqual(seq(1,length(input$baseensemble),0.5), 
+                   two.colors(n=length(input$baseensemble)*2-1, start="green",
+                              end="red", middle = "orange"))
+  })
+  
   output$ModelsTable <- DT::renderDataTable({
-    bg <- styleEqual(seq(1,length(gcmnames),0.5), 
-                     two.colors(n=length(gcmnames)*2-1, start="green",
-                                end="red", middle = "orange"))
     
     if(input$tabletype=="Selected models") {
       datatable(gcmtable(), caption=HTML("<font size=+1><b>Ranking of the selected models</b></font>"), 
                 rownames=FALSE,
                 options=list(dom='t', pageLength=input$ngcm)) %>%
-                formatStyle('Rank', target = 'row', backgroundColor = bg)
+                formatStyle('Rank', target = 'row', backgroundColor = bg())
     } else if (input$tabletype=="Best performing models") {
       datatable(gcmtableBest(), caption=HTML("<font size=+1><b>Ranking of the best performing models</b></font>"),
                 rownames=FALSE,
                 options=list(dom='t',pageLength=input$ngcm)) %>% 
-        formatStyle('Rank', target = 'row',  backgroundColor = bg)
+        formatStyle('Rank', target = 'row',  backgroundColor = bg())
     } else {
       datatable(
       #DT::renderDataTable # use with buttons
         gcmtableAll(), caption=HTML("<font size=+1><b>Ranking of all models</b></font>"),
                 rownames=FALSE, 
                 options=list(dom='t',
-                             pageLength=length(gcmnames)#,
+                             pageLength=length(input$baseensemble)#,
                             )) %>% 
-        formatStyle('Rank', target = 'row',  backgroundColor = bg)
+        formatStyle('Rank', target = 'row',  backgroundColor = bg())
     }
   })
 
@@ -380,9 +366,9 @@ shinyServer(function(input, output, session) {
     }}, width=190,height=130)#width=250, height=175)
 
   ## Output: scatterplot of temperature and precip. change 
-  colvec <- two.colors(n=length(gcmnames), start="green", end="red", middle="orange")
   
   clr <- reactive({
+    colvec <- two.colors(n=length(input$baseensemble), start="green", end="red", middle="orange")
     colrank <- colvec[weightedrank_all()]
     c1 <- rgb(116,196,215,150,maxColorValue=255)
     c2 <- rgb(0,144,168,255,maxColorValue=255)
@@ -390,7 +376,7 @@ shinyServer(function(input, output, session) {
       x <- adjustcolor(colrank, alpha.f=0.4)
       x[im()] <- adjustcolor(colrank[im()], alpha=0.9)
     } else {
-      x <- rep(c1,length(gcmnames))
+      x <- rep(c1,length(input$baseensemble))
       x[im()] <- c2
     }
     return(x)
@@ -403,17 +389,16 @@ shinyServer(function(input, output, session) {
   })
   
   sz <- reactive({
-    x <- rep(8, length(gcmnames))
+    x <- rep(8, length(input$baseensemble))
     x[im()] <- 11
     return(x)
   })
   
   # Region 1
   output$dtdpr1 <- renderPlotly({
-
     p <- plot_ly(data.frame(x=dtas1(),y=dpr1()), x=~x, y=~y, type="scatter", mode="markers",
             marker=list(color=clr(), size=sz(), line=list(color=clr.line(), width=1.2)),
-            text=paste(gcmnames,"\nWeighted rank:",weightedrank_all()), source="A",
+            text=paste(input$baseensemble,"\nWeighted rank:",weightedrank_all()), source="A",
             name="Selected models") %>%
     add_trace(x=mean(dtas1()), y=mean(dpr1()), name="mean of all",
               marker=list(symbol="star", color='yellow', size=10, 
@@ -436,7 +421,7 @@ shinyServer(function(input, output, session) {
 
     p <- plot_ly(data.frame(x=dtas2(),y=dpr2()), x=~x, y=~y, type="scatter", mode="markers",
                  marker=list(color=clr(), size=sz(), line=list(color=clr.line(), width=1.2)),
-                 text=paste(gcmnames,"\nWeighted rank:",weightedrank_all()), source="A",
+                 text=paste(input$baseensemble,"\nWeighted rank:",weightedrank_all()), source="A",
                  name="Selected models") %>%
       add_trace(x=mean(dtas2()), y=mean(dpr2()), name="mean of all",
                 marker=list(symbol="star", color='yellow', size=10, 
@@ -467,11 +452,12 @@ shinyServer(function(input, output, session) {
   observe({
     d <- event_data(event="plotly_click", source="A")
     if(!is.null(d)) {
-      i <- sort(unique(c(as.numeric(gsub(":.*","",input$gcms)),d$pointNumber+1)))
+      #i <- sort(unique(c(as.numeric(gsub(":.*","",input$gcms)),d$pointNumber+1)))
+      i <- sort(unique(c(which(input$baseensemble %in% input$gcms),d$pointNumber+1)))
       updateCheckboxGroupInput(session, inputId = "gcms", 
-                               choices = gcmnames, selected = gcmnames[i])
+                               choices = input$baseensemble, selected = input$baseensemble[i])
       updateNumericInput(session, inputId = "ngcm", value=length(input$gcms), 
-                         min=1, max=length(gcmnames))
+                         min=1, max=length(input$baseensemble))
     }
   })
 
@@ -506,31 +492,28 @@ shinyServer(function(input, output, session) {
   # When selecting GCMs from the checkboxes, update ngcm
   observeEvent(input$gcms,{
     updateNumericInput(session, inputId = "ngcm", 
-                       value=length(input$gcms), min=1, max=length(gcmnames))
+                       value=length(input$gcms), min=1, max=length(input$baseensemble))
   })
   
   # When clicking 'best' button, select best performing GCMs
   observeEvent(input$best, {
-    #gcmnames <- metaPrep(input$rcp)
     i <- best()
-    updateCheckboxGroupInput(session, inputId = "gcms", choices = gcmnames, 
-                             selected = gcmnames[i])
+    updateCheckboxGroupInput(session, inputId = "gcms", choices = input$baseensemble, 
+                             selected = input$baseensemble[i])
   })
 
   # When clicking 'random' button, select random GCMs
   observeEvent(input$randomize, {
-    #gcmnames <- metaPrep(input$rcp)
     i <- sample(1:length(gcmnames),input$ngcm,replace=FALSE)
-    updateCheckboxGroupInput(session, inputId = "gcms", choices = gcmnames, 
-                             selected = gcmnames[i])
+    updateCheckboxGroupInput(session, inputId = "gcms", choices = input$baseensemble, 
+                             selected = input$baseensemble[i])
   })
   
   # When clicking 'random' button, select random GCMs
   observeEvent(input$first, {
-    #gcmnames <- metaPrep(input$rcp)
     i <- 1:input$ngcm
-    updateCheckboxGroupInput(session, inputId = "gcms", choices = gcmnames, 
-                             selected = gcmnames[i])
+    updateCheckboxGroupInput(session, inputId = "gcms", choices = input$baseensemble, 
+                             selected = input$baseensemble[i])
   })
   
   # Reset plotly clicks when changing GCM selection (gcms)  
@@ -538,6 +521,11 @@ shinyServer(function(input, output, session) {
     js$resetClick()
   })
   
-  
+  # Reset plotly clicks when changing GCM selection (gcms)  
+  observeEvent(input$baseensemble,{
+    i <- which(input$baseensemble %in% input$gcms)
+    updateCheckboxGroupInput(session, inputId = "gcms", choices = input$baseensemble, 
+                             selected = input$baseensemble[i])
+  })  
   
 })

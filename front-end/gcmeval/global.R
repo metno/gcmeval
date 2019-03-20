@@ -164,8 +164,6 @@ dataPrep <- function(rcp="rcp45") {
   return(stats)
 }
 
-#stats.rcp45 <- dataPrep(rcp="rcp45")
-#stats.rcp85 <- dataPrep(rcp="rcp85")
 stats.both <- dataPrep(rcp=c("rcp45","rcp85"))
 gcmnames <- attr(stats.both,"gcmnames")
 gcmnames <- paste(seq(gcmnames),gcmnames,sep=": ")
