@@ -201,14 +201,6 @@ dashboardPage(
       ),
       menuItem("Settings for scatterplot", tabName="spread", icon=NULL,
               selectInput(
-                "region",
-                label = "Focus region",
-                choices = regionlist,
-                selected = "Global"
-              ),
-              plotOutput("map", width = '100%', height = '130px'),
-              br(),
-              selectInput(
                 "season",
                 label = "Season",
                 choices = c("Annual mean", "Winter", "Spring", "Summer", "Autumn"),
@@ -231,14 +223,14 @@ dashboardPage(
                           label = "Temperature range",
                           min = -20, 
                           max = 20,
-                          step = 0.1,
-                          value = c(-5,5)),
+                          step = 0.5,
+                          value = c(-8,8)),
               sliderInput("ylim", 
                           label = "Precipitation range",
                           min = -4, 
                           max = 4,
-                          step = 0.1,
-                          value = c(-1,1))
+                          step = 0.2,
+                          value = c(-1.2,1.2))
       ),
       menuItem("Advanced settings", tabName="advanced", icon=icon("cog"),
                selectInput(
@@ -282,7 +274,6 @@ dashboardPage(
             htmlOutput("DisclaimerText")
         )
       ),
-      fluidRow(valueBoxOutput("value1"),valueBoxOutput("value2"),valueBoxOutput("value3")),
       column(
         12,
         box(
@@ -295,48 +286,73 @@ dashboardPage(
           column(8,
                  selectInput("tabletype", 
                              label="Show ranking of ensemble",
-                             choices=c("Selected models","Best performing models","All models"))),
+                             choices=c("Selected models","Best performing models","All models"))
+                 ),
           column(12,
-                 column(8,
-                  DT::dataTableOutput("ModelsTable"),
-                  br()),
-                 column(4,
+                 DT::dataTableOutput("ModelsTable"),
+                 br()
+                 ),
+          column(12,
+                box(
+                  label="weights",
+                  title = HTML("<font size=+0>Summary of weights</font>"),
+                  width = '100%' ,
+                  status = 'primary',
+                  collapsible = TRUE,
+                  collapsed = TRUE,
                   DT::dataTableOutput("WeightsTable"),
-                  br()))
-          #column(6,
-          #       DT::dataTableOutput("ModelsTableBest"),
-          #       br())
+                  br()
+                )
+          )
         )
       ),
       column(
         12,
         box(
           label="spread",
-          title = HTML("<font size=+1.5 color='black'><b>Scatterplot of the regional mean climate change</b></font>"),
+          title = HTML("<font size=+1.5 color='black'><b>Spread of the regional mean climate change</b></font>"),
           status = 'primary',
           width = '100%',
           collapsible = TRUE,
           collapsed = FALSE,
-            column(
-                   12,
-                   checkboxInput("show.ranking", 
-                                 label=HTML("<font size=-1<i>Show model ranking as color scale</i></font>"), 
-                                 value=FALSE),
-                   br(),
-                   plotlyOutput("dtdpr", width = '100%', height = 550),
-                   br()
-            )#,
-            #column(
-            #  12,
-            #  checkboxInput("show.ranking", 
-            #                label=HTML("<font size=-1<i>Show model ranking as color scale</i></font>"), 
-            #                value=FALSE),
-            #  br(),
-            #  plotlyOutput("dtdpr", width = '100%', height = 550),
-            #  br(),
-            #  br()
-          #)
-          )
+            box(
+              label="summary",
+              title = HTML("<font size=+0>Summary statistics</font>"),
+              status = 'primary',
+              width = '100%',
+              collapsible = TRUE,
+              collapsed = FALSE,
+              htmlOutput("SpreadText")
+            ),
+          checkboxInput("show.ranking", 
+                        label=HTML("<font size=-1<i>Show model ranking as color scale</i></font>"), 
+                        value=FALSE),
+          box(
+              label="spread1",
+              title = HTML("<font size=+0>Scatterplot for primary focus region</font>"),
+              status = 'primary',
+              width = '100%',
+              collapsible = TRUE,
+              collapsed = FALSE,
+              br(),
+              plotlyOutput("dtdpr1", width = '100%', height = 550),
+              br()
+            ),
+            box(
+              label="spread2",
+              title = HTML("<font size=+0>Scatterplot for secondary focus region</font>"),
+              status = 'primary',
+              width = '100%',
+              collapsible = TRUE,
+              collapsed = FALSE,
+              #checkboxInput("show.ranking", 
+              #              label=HTML("<font size=-1<i>Show model ranking as color scale</i></font>"), 
+              #              value=FALSE),
+              br(),
+              plotlyOutput("dtdpr2", width = '100%', height = 550),
+              br()
+            )
+        )
       ),
       column(
         12,
