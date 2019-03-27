@@ -11,17 +11,15 @@ getERA5 <- function(variable,start=1979,end=2018,griddes="cmip_1.25deg_to_2.5deg
     varID <- "167.128"
     stream <- "moda"
     type <- "an"
-    cmd1 <- "-chname,t2,tas -setgridtype,regular"
-    cmd2 <- "-remapcon"
-    input2 <- griddes
+    cmd <- c("-chname","-remapcon")
+    input <- c("2t,tas",griddes)
   } else if(any(match(c("pre","prc","prec","precipitation","pr"),variable,nomatch=0))) {
     if(verbose) print("variable: precipitation")
     varID <- "228.128"
     stream <- "moda"
-    type <- "an"#"fc"
-    cmd1 <- "-chname,tp,pr -setgridtype,regular"
-    cmd2 <- "-remapcon"
-    input2 <- griddes
+    type <- "fc"
+    cmd <- c("-chname","-remapcon")
+    input <- c("tp,pr",griddes)
   }
   if(is.null(destfile)) destfile <- paste0("era5_monthly_",paste(start,end,sep="-"),"_",variable,".nc")
   outfile <- gsub('.nc$', '.2.5deg.nc',destfile)
@@ -30,10 +28,10 @@ getERA5 <- function(variable,start=1979,end=2018,griddes="cmip_1.25deg_to_2.5deg
     if(!file.exists(destfile)) {
       if(verbose) print("NetCDF file does not exist. Download with cdsapi Python tool.")
       python.getEra5(start, end, varID, type, stream, destfile, 
-                     cdocmd=cmd1, python=python, verbose=verbose)
+                     python=python, verbose=verbose)
     }
     if(verbose) print("Regrid with CDO and save as netCDF.")
-    cdo.command(cmd2,input2,destfile,outfile)
+    cdo.command(cmd,input,destfile,outfile)
   }
   if(verbose) print("Retrieve data from netCDF file.")
   #X <- esd::retrieve.ncdf4(outfile)

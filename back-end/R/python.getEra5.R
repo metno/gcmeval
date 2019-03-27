@@ -1,6 +1,6 @@
 # Call to a python script which downloads data from the public ECMWF data server
 python.getEra5 <- function(start,end,varid,type,stream,outfile,
-                           cdocmd="",python="python",verbose=FALSE) {
+                           python="python",verbose=FALSE) {
   if(verbose) print("python.getEra5")
   path.era <- find.file("getMonthlyERA5.py")
   script <- paste(python,path.era[1])
@@ -12,7 +12,7 @@ python.getEra5 <- function(start,end,varid,type,stream,outfile,
   if(verbose) print("Run ECMWF Python script for downloading ERA5 data")
   system.command <- paste(script," -f ",start," -l ",end,
                           " -v ",varid," -t ",type," -r ",stream,
-                          " -o ",outfile," -c ",cdocmd,sep="")
+                          " -o ",outfile,sep="")
   system(system.command)
   # Remove old files:
   #system.command <- paste0("rm ","era5_",stream,"_",variable,"_",type,"_*.grib")
