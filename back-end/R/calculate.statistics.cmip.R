@@ -11,12 +11,47 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
   shape <- get.shapefile("referenceRegions.shp")
   srex.regions <- as.character(shape$LAB)
   if(max(period)>2015) reference <- NULL
+  
+  # Check unit of GCM files
+  gcm.files <- list.files(path=path.gcm, paste0('GCM[0-9]{1,3}.',variable,'.',experiment,'.nc'))
+  nc <- ncdf4::nc_open(file.path(path.gcm,gcm.files[1]))
+  units <- nc$var[[length(nc$var)]]$units
+  
   if(!is.null(reference)) {
     ref.file <- getReference(reference,variable)
     if(!is.character(ref.file)) {
       reference <- NULL
       print("Warning! Reference file not found. Continuing without reference data.")
       stats <- stats[!stats %in% c("corr","rmse")]
+    } else {
+      ## Check unit of reference data to unit of GCM data
+      ## and create a function f.ref to convert the ref unit:
+      nc <- ncdf4::nc_open(file.path(ref.file))
+      ref.unit <- nc$var[[length(nc$var)]]$units
+      ncdf4::nc_close(nc)
+      f.ref <- function(x) x
+      if(units!=ref.unit) {
+        if(variable=="pr") {
+          c.ref <- 1
+          if(grepl("/s|s-1",units) & !grepl("/s|s-1",ref.unit)) {
+            c.ref <- c.ref/(60*60*24)
+          } else if(!grepl("/s|s-1",units) & grepl("/s|s-1",ref.unit)) {
+            c.ref <- c.ref*(60*60*24)
+          }
+          if(grepl("mm|kg m-2",units) & !grepl("mm|kg m-2",ref.unit)) {
+            c.ref <- c.ref*1E3
+          } else if(!grepl("mm|kg m-2",units) & grepl("mm|kg m-2",ref.unit)) {
+            c.ref <- c.ref*1E-3
+          }
+          f.ref <- function(x) x*c.ref
+        } else if(variable=="tas") {
+          if(grepl(units,"K") & grepl(ref.unit,"C")) {
+            f.ref <- function(x) x+273.15
+          } else if(grepl(units,"C") & grepl(ref.unit,"K")) {
+            f.ref <- function(x) x-273.15
+          }
+        }
+      }
     }
   } else {
     stats <- stats[!stats %in% c("corr","rmse")]
@@ -24,7 +59,7 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
   
   if(!is.null(reference) && "corr" %in% stats) ref.corr <- ref.file
   
-  label.period <- paste(period, collapse="-")
+  label.period <- paste0("period.",paste(period, collapse="_"))
   if(is.null(path)) path <- getwd()
   store.file <- file.path(path,store.file)
   
@@ -47,7 +82,14 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
     ref.mon.file <- paste(reference,"monmean",variable,"nc",sep=".")
     if(!is.character(find.file(ref.mon.file)[1])) ref.mon.file <- file.path(path,ref.mon.file)
     if(variable=="pr") {
-      if(!file.exists(ref.mulc)) cdo.command("mulc",1000,ref.file,ref.mulc)
+      nc <- ncdf4::nc_open(file.path(ref.file))
+      ref.unit <- nc$var[[length(nc$var)]]$units
+      ncdf4::nc_close(nc)
+      if(ref.unit %in% c("m","m/day","m day-1","m/s","m s-1")) {
+        cdo.command("mulc", 1000, ref.file, "tmp.nc")
+        cdo.command("chunit", paste0(ref.unit,",",gsub("m","mm",ref.unit)), "tmp.nc", ref.mulc)
+        system("rm tmp.nc")
+      }
     } else {
       if(!file.exists(ref.mulc)) ref.mulc <- ref.file
     }
@@ -55,7 +97,7 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
       cdo.command(c("-ymonmean","-selyear"),c("",paste(period,collapse="/")),
                   ref.mulc, ref.mon.file)
     }
-    ref <- zoo::coredata(esd::retrieve.default(ref.mon.file))
+    ref <- esd::retrieve.default(ref.mon.file)
     lon <- attr(ref,"longitude")
     lat <- attr(ref,"latitude")
     weights <- calculate.mon.weights(lon,lat)
@@ -66,13 +108,13 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
     if(verbose) print("Calculate basic statistics for reference data")
     if("spatial.sd" %in% stats & is.null(X[[reference]]$global$spatial.sd)) {
       if(verbose) print("spatial st dev")
-      X[[reference]]$global$spatial.sd <- c(cdo.spatSd(ref.file,period),
-                                            cdo.spatSd(ref.file,period,monthly=TRUE))
+      X[[reference]]$global$spatial.sd <- f.ref(c(cdo.spatSd(ref.file,period),
+                                            cdo.spatSd(ref.file,period,monthly=TRUE)))
     }
     if("mean" %in% stats & is.null(X[[reference]]$global$mean)) {
       if(verbose) print("mean value")
-      X[[reference]]$global$mean <- c(cdo.mean(ref.file,period),
-                                      cdo.mean(ref.file,period,monthly=TRUE))
+      X[[reference]]$global$mean <- f.ref(c(cdo.mean(ref.file,period),
+                                      cdo.mean(ref.file,period,monthly=TRUE)))
     }
 
     for(i in 1:length(srex.regions)) {
@@ -81,36 +123,17 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
       if("spatial.sd" %in% stats & is.null(X[[reference]][[srex.regions[i]]]$spatial.sd)) {
         if(verbose) print("spatial st dev")
         X[[reference]][[srex.regions[i]]]$spatial.sd <-
-          c(cdo.spatSd(ref.file,period,mask=mask), 
-            cdo.spatSd(ref.file,period,mask=mask,monthly=TRUE))
+          f.ref(c(cdo.spatSd(ref.file,period,mask=mask), 
+            cdo.spatSd(ref.file,period,mask=mask,monthly=TRUE)))
       }
       if("mean" %in% stats & is.null(X[[reference]][[srex.regions[i]]]$mean)) {
         if(verbose) print("mean value")
         X[[reference]][[srex.regions[i]]]$mean <-
-          c(cdo.mean(ref.file,period,mask=mask), 
-            cdo.mean(ref.file,period,mask=mask,monthly=TRUE))
+          f.ref(c(cdo.mean(ref.file,period,mask=mask), 
+            cdo.mean(ref.file,period,mask=mask,monthly=TRUE)))
       }
     }
 
-    if (variable=="tas") {
-      if(max(abs(X[[reference]]$global$mean),na.rm=TRUE)>273) {
-        units <- "K"
-      } else {
-        units <- "degrees~Celsius"
-      }
-    } else if(variable=="pr") {
-      if(!is.null(ref.file)) {
-        ncid <- ncdf4::nc_open(ref.file)
-        units <- ncid$var[[1]]$units
-        ncdf4::nc_close(ncid)
-      } else {
-        if(max(abs(X[[reference]]$global$mean),na.rm=TRUE)<0.001) {
-          units <- "kg m-2 s-1"
-        } else {
-          units <- "mm/day"
-        }
-      }
-    }
     attr(X[[reference]],"variable") <- variable
     attr(X[[reference]],"unit") <- units
     statistics[[variable]][[experiment]][[label.period]][[reference]] <- X[[reference]]
@@ -183,13 +206,15 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
       X[[store.name]]$global$corr[[reference]] <- c(cdo.gridcor(gcm.file,ref.corr,period),
           cdo.gridcor(gcm.file,ref.corr,period,monthly=TRUE))
     }
-    if("rmse" %in% stats & is.null(X[[store.name]]$global$rmse[[reference]])) {
+    if("rmse" %in% stats & (is.null(X[[store.name]]$global$rmse) |
+       !reference %in% names(X[[store.name]]$global$rmse)) ) {
+       #is.null(X[[store.name]]$global$rmse[[reference]])) {
       if(verbose) print("rmse")
       gcm.mon.file <- file.path(path,"gcm.monmean.nc")
       cdo.command(c("-ymonmean","-selyear"),c("",paste(period,collapse="/")),
                   gcm.file, gcm.mon.file)
       gcm <- zoo::coredata(esd::retrieve.default(gcm.mon.file))
-      dim(gcm) <- dim(ref) <- c(12,length(attr(gcm,"longitude")),length(attr(gcm,"latitude")))
+      dim(gcm) <- dim(ref) <- c(12,length(attr(ref,"longitude")),length(attr(ref,"latitude")))
       X[[store.name]]$global$rmse[[reference]] <- sqrt(sum(weights*(gcm-ref)^2)/sum(weights))
     }
     for(j in 1:length(srex.regions)) {
@@ -221,7 +246,7 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
         gcm.masked <- mask.zoo(gcm,mask.j)
         ref.masked <- mask.zoo(ref,mask.j)
         dim(gcm.masked) <- dim(ref.masked) <- 
-          c(12,length(attr(gcm,"longitude")),length(attr(gcm,"latitude")))
+          c(12,length(attr(ref,"longitude")),length(attr(ref,"latitude")))
         X[[store.name]][[srex.regions[j]]]$rmse[[reference]] <- 
           sqrt(sum(weights*(gcm.masked-ref.masked)^2,na.rm=TRUE)/
                  sum(weights[!is.na(gcm.masked)]))
@@ -229,20 +254,20 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
     }
     if (variable=="tas") {
       if(max(abs(X[[store.name]]$global$mean),na.rm=TRUE)>273) {
-        units <- c(units,"K")
+        gcm.unit <- "K"
       } else {
-        units <- c(units,"degrees~Celsius")
+        gcm.unit <- "degrees~Celsius"
       }
     } else if(variable=="pr") {
       if(!is.null(gcm.file)) {
-        ncid <- ncdf4::nc_open(gcm.file)
-        units <- c(units,ncid$var[[1]]$units)
-        ncdf4::nc_close(ncid)
+        nc <- ncdf4::nc_open(gcm.file)
+        gcm.unit <- nc$var[[1]]$units
+        ncdf4::nc_close(nc)
       }
     }
     attr(X[[store.name]],"filename") <- basename(gcm.file)
     attr(X[[store.name]],"variable") <- variable
-    attr(X[[store.name]],"unit") <- units
+    attr(X[[store.name]],"unit") <- gcm.unit
     statistics[[variable]][[experiment]][[label.period]][[store.name]] <- X[[store.name]]
     save(file=store.file,statistics)
     
@@ -252,7 +277,6 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
       }
     }
   }
-  browser()
   if("rmse" %in% stats) {
     if(verbose) print("Calculate CMPI for all regions and GCMs")
     X <- statistics[[variable]][[experiment]][[label.period]]
