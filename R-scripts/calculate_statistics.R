@@ -1,12 +1,14 @@
-## Script to extract metadata and calculate statistics.
-## The metadata (metaextract.rda) and statistics files (statistics.cmip.era.tas.1981-2010.rda)
-## should then be moved to the back-end/data folder.
+## Script to extract metadata and calculate statistics and prepare
+## the metadata (meta.rda) and statistics files (statistics.rda).
+## The files should then be moved to the back-end/data folder.
 
 #!/usr/bin/env Rscript
 library(gcmeval)
+# If you have already downloaded GCM data, set path here:
+#path <- "/path/to/GCM/data"
 dir <- find.file("calculate_statistics.R")
 path <- dirname(dir[grepl("gcmeval",dir)])
-setwd(path)
+setwd(path[1])
 
 ## To install gcmeval package: 
 ## R CMD INSTALL gcmeval/back-end 
@@ -16,38 +18,41 @@ get.meta <- FALSE
 get.stats <- TRUE
 
 ## Calculate statistics for CMIP5 data
-opt <- list(ref.tas="eraint", ref.pr="eraint", verbose=TRUE,
-            it.ref=c(1981,2010), nfiles="all", continue=TRUE,
-	          mask="coords.txt", path=path)
+# Alternatives for ref: tas: eraint, era5; pr: eraint, era5, gpcp
+opt <- list(ref.tas=c("era5","eraint"), ref.pr=c("era5","eraint","gpcp"),
+            verbose=TRUE, it.ref=c(1981,2010), nfiles="all",
+	    continue=TRUE, mask="coords.txt", path=path)
 
 # Download reference data
 if(get.stats) {
   for (varid in c("tas","pr")) {
     ref.var <- switch(varid, "tas"=opt$ref.tas, "pr"=opt$ref.pr)
-    ref <- getReference(ref.var,varid)
-    # ref=FALSE if file is missing, else ref=filename
-    if(is.logical(ref)) { 
-      if(opt$verbose) print("Download reference data")
-      if(ref.var=="eraint") {
-        getERA(variable=varid, verbose=opt$verbose)
-      } else if(ref.var=="era5") {
-        getERA5(variable=varid, python="python3", verbose=opt$verbose)
-      } else if(ref.var=="eobs") {
-        getEOBS(variable=varid, verbose=opt$verbose)
+    for(ref in ref.var) {
+      if(is.logical(getReference(ref,varid))) { 
+        if(opt$verbose) print("Download reference data")
+        if(ref=="eraint") {
+          getERA(variable=varid, verbose=opt$verbose)
+        } else if(ref=="era5") {
+          getERA5(variable=varid, python="python", verbose=opt$verbose)
+        } else if(ref=="eobs") {
+          getEOBS(variable=varid, verbose=opt$verbose)
+        } else if(ref=="gpcp") {
+          getGPCP(verbose=opt$verbose)
+        }
       }
     }
   }
 }
 
-if(get.meta) {
-  # Set add=FALSE to create new metadata file or TRUE to add to old file
-  add <- TRUE
-  for(varid in c("tas","pr")) {
-    for(rcp in c("rcp45","rcp85")) {
-      x <- getGCMs(select=1:110,varid=varid,experiment=rcp,
-                   verbose=opt$verbose,path=opt$path)
+# Set add=FALSE to create new metadata file or TRUE to add to old file
+add <- TRUE
+for(varid in c("tas","pr")) {
+  for(rcp in c("rcp45","rcp85")) {
+    x <- getGCMs(select=1:110,varid=varid,experiment=rcp,
+                 verbose=opt$verbose,path=opt$path)
+    if(get.meta) {
       y <- metaextract(x,verbose=opt$verbose,add=add)
-      #add <- TRUE # change add to TRUE so metadata is added to old file
+      add <- TRUE # change add to TRUE so metadata is added to old file
     }
   }
 }
@@ -55,19 +60,25 @@ if(get.meta) {
 # Calculate regional statistics for CMIP5 
 # (spatial mean, sd, corr, seasonal cycle rmse, cmpi)
 if(get.stats) {
-  force <- FALSE
-  for (varid in c("tas","pr")) {
+  continue <- TRUE
+  for (varid in c("pr","tas")) {
     print(paste("Calculate annual cycle statistics of",varid))
-    ref.var <- switch(varid, "tas"=opt$ref.tas, "pr"=opt$ref.pr)#
-    for (it in list(opt$it.ref,c(2071,2100),c(2021,2050))) {
-      for(rcp in c("rcp85","rcp45")) {
+    for(rcp in c("rcp85","rcp45")) {
+       for (it in list(opt$it.ref,c(2071,2100),c(2021,2050))) {
         print(paste("period:",paste(it,collapse="-"),
                     "; scenario:",rcp))
-        calculate.statistics.cmip(reference=ref.var, period=it,
+        if(all(it==opt$it.ref)) {
+          ref.var <- switch(varid, "tas"=opt$ref.tas, "pr"=opt$ref.pr)
+	} else {
+	  ref.var <- NULL
+	}
+      	for(ref in ref.var) {
+          calculate.statistics.cmip(reference=ref, period=it,
 	        variable=varid, path.gcm=opt$path, nfiles=opt$nfiles,
-	        continue=!force, mask=opt$mask, experiment=rcp,
+	        continue=continue, mask=opt$mask, experiment=rcp,
 	        verbose=opt$verbose)
-        force <- FALSE
+          continue <- TRUE
+	}
       }
     }
   }
