@@ -4,7 +4,10 @@
 \alias{getCRU}
 \alias{getEOBS}
 \alias{getERA}
+\alias{getERA5}
+\alias{getGPCP}
 \alias{python.getEra}
+\alias{python.getEra5}
 \title{Get reference data}
 \description{
 Functions for downloading reference data.
@@ -13,6 +16,8 @@ Functions for downloading reference data.
 \code{getCRU} retrieves CRU data.
 \code{getEOBS} gets daily EOBS data and converts it to monthly averages.
 \code{getERA} retrieves ERAinterim data from the ECMWF data server using the \code{python.getEra} script. To use these functions, you must register as an ECMWF data user and obtain an API key.   
+\code{getERA5} retrieves ERA5 data from the CDS data server using the \code{python.getEra5} script. To use these functions, you must register as a CDS data user and obtain an API key.
+\code{getGCPC} retrieves GPCP precipitation data.
 }
 \usage{
 getReference(reference,variable,verbose=FALSE)
@@ -24,6 +29,7 @@ getCRU(username,passwd,variable="tmp",version="4.00",
 getEOBS(variable="tas", destfile=NULL, version="17", lon=NULL, lat=NULL, verbose=FALSE)
 getERA(variable,start=1979,end=2017,griddes="cmip_1.25deg_to_2.5deg.txt",
        destfile=NULL,force=FALSE,verbose=FALSE)
+getGPCP(destfile='gpcp.nc',path=NULL,lon=NULL,lat=NULL,force=FALSE,verbose=FALSE)
 python.getEra(start,end,varid,steps,type,stream,outfile,verbose=FALSE)
 }
 \arguments{
