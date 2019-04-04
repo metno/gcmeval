@@ -7,27 +7,24 @@ getCM <- function(url=NULL,destfile='CM.nc',path=NULL,
       'https://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_ACCESS1-0_historical_000.nc'
   if(!is.null(path)) destfile <- file.path(path,destfile)
   if (file.exists(destfile) & !force) {
-    X <- try(esd::retrieve.default(destfile,lon=lon,lat=lat,verbose=verbose), silent=TRUE)
+    if(verbose) print(paste("File",destfile,"exists. Check file."))
+    X <- try(esd::retrieve.default(destfile,lon=lon,lat=lat,verbose=FALSE), silent=TRUE)
     if (inherits(X,"try-error")) force <- TRUE # If downloaded file is incomplete, force new download
   }
   if (!file.exists(destfile) | force) {
+    if(verbose) print(paste("Download file from",url))
     lok <- try(download.file(url=url, destfile=destfile), silent=TRUE)
-    # KMP 2017-11-27: download.file returns non-zero when failing
-    #if (inherits(lok,"try-error")) return()
     if(lok>0) {
       try(file.remove(destfile), silent=TRUE)
       return()
     }
-    X <- try(esd::retrieve.default(destfile,lon=lon,lat=lat,verbose=verbose), silent=TRUE)
+    X <- try(esd::retrieve.default(destfile,lon=lon,lat=lat,verbose=FALSE), silent=TRUE)
   }
   ## Collect information stored in the netCDF header
   cid <- getatt(destfile)
   ## Extract a time series for the area mean for 
-  # Takes a long time. Remove (temporarily?)
-  #cid$area.mean <- aggregate.area(X,FUN='mean')
-  #cid$area.sd <- aggregate.area(X,FUN='sd')
   cid$url <- url
-  cid$dates <- paste(range(zoo::index(X)),collapse=",")
+  #cid$dates <- paste(range(zoo::index(X)),collapse=",")
   ## Collect information stored as model attributes
   ncid <- ncdf4::nc_open(destfile)
   model <- ncdf4::ncatt_get(ncid,0)
