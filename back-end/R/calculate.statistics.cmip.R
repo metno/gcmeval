@@ -106,12 +106,12 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
   if(!is.null(reference) & any(c("spatial.sd","mean") %in% stats)) {
     if(verbose) print("Global")
     if(verbose) print("Calculate basic statistics for reference data")
-    if("spatial.sd" %in% stats & is.null(X[[reference]]$global$spatial.sd)) {
+    if("spatial.sd" %in% stats & !"spatial.sd" %in% names(X[[reference]]$global)) {
       if(verbose) print("spatial st dev")
       X[[reference]]$global$spatial.sd <- f.ref(c(cdo.spatSd(ref.file,period),
                                             cdo.spatSd(ref.file,period,monthly=TRUE)))
     }
-    if("mean" %in% stats & is.null(X[[reference]]$global$mean)) {
+    if("mean" %in% stats & !"mean" %in% names(X[[reference]]$global)) {
       if(verbose) print("mean value")
       X[[reference]]$global$mean <- f.ref(c(cdo.mean(ref.file,period),
                                       cdo.mean(ref.file,period,monthly=TRUE)))
@@ -120,13 +120,13 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
     for(i in 1:length(srex.regions)) {
       if(verbose) print(paste0("Region ",i,": ",srex.regions[i]))
       getPolCoords(i,shape=shape,destfile=mask)
-      if("spatial.sd" %in% stats & is.null(X[[reference]][[srex.regions[i]]]$spatial.sd)) {
+      if("spatial.sd" %in% stats & !"spatial.sd" %in% names(X[[reference]][[srex.regions[i]]])) {
         if(verbose) print("spatial st dev")
         X[[reference]][[srex.regions[i]]]$spatial.sd <-
           f.ref(c(cdo.spatSd(ref.file,period,mask=mask), 
             cdo.spatSd(ref.file,period,mask=mask,monthly=TRUE)))
       }
-      if("mean" %in% stats & is.null(X[[reference]][[srex.regions[i]]]$mean)) {
+      if("mean" %in% stats & !"mean" %in% names(X[[reference]][[srex.regions[i]]])) {
         if(verbose) print("mean value")
         X[[reference]][[srex.regions[i]]]$mean <-
           f.ref(c(cdo.mean(ref.file,period,mask=mask), 
@@ -179,17 +179,17 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
     }
     if(verbose) print("Global")
     if(verbose) print("Calculate basic statistics")
-    if("spatial.sd" %in% stats & is.null(X[[store.name]]$global$spatial.sd)) {
+    if("spatial.sd" %in% stats & !"spatial.sd" %in% names(X[[store.name]]$global)) {
       if(verbose) print("spatial st dev")
       X[[store.name]]$global$spatial.sd <- c(cdo.spatSd(gcm.file,period),
                                              cdo.spatSd(gcm.file,period,monthly=TRUE))
     }
-    if("mean" %in% stats & is.null(X[[store.name]]$global$mean)) {
+    if("mean" %in% stats & !"mean" %in% names(X[[store.name]]$global)) {
       if(verbose) print("mean value")
         X[[store.name]]$global$mean <- c(cdo.mean(gcm.file,period),
                                          cdo.mean(gcm.file,period,monthly=TRUE))
     }
-    if("corr" %in% stats & is.null(X[[store.name]]$global$corr[[reference]])) {
+    if("corr" %in% stats & !reference %in% names(X[[store.name]]$global$corr)) {
       if(verbose) print("spatial correlation")
       res.ref <- resolution(ref.corr)
       res.gcm <- resolution(gcm.file)
@@ -206,9 +206,7 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
       X[[store.name]]$global$corr[[reference]] <- c(cdo.gridcor(gcm.file,ref.corr,period),
           cdo.gridcor(gcm.file,ref.corr,period,monthly=TRUE))
     }
-    if("rmse" %in% stats & (is.null(X[[store.name]]$global$rmse) |
-       !reference %in% names(X[[store.name]]$global$rmse)) ) {
-       #is.null(X[[store.name]]$global$rmse[[reference]])) {
+    if("rmse" %in% stats & !reference %in% names(X[[store.name]]$global$rmse) ) {
       if(verbose) print("rmse")
       gcm.mon.file <- file.path(path,"gcm.monmean.nc")
       cdo.command(c("-ymonmean","-selyear"),c("",paste(period,collapse="/")),
@@ -216,30 +214,31 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
       gcm <- zoo::coredata(esd::retrieve.default(gcm.mon.file))
       dim(gcm) <- dim(ref) <- c(12,length(attr(ref,"longitude")),length(attr(ref,"latitude")))
       X[[store.name]]$global$rmse[[reference]] <- sqrt(sum(weights*(gcm-ref)^2)/sum(weights))
+      file.remove(gcm.mon.file)
     }
     for(j in 1:length(srex.regions)) {
       if(verbose) print(paste0("Region ",j,": ",srex.regions[j]))
       getPolCoords(j,shape=shape,destfile=mask)
       if(verbose) print("Calculate basic statistics")
-      if("spatial.sd" %in% stats & is.null(X[[store.name]][[srex.regions[j]]]$spatial.sd)) {
+      if("spatial.sd" %in% stats & !"spatial.sd" %in% names(X[[store.name]][[srex.regions[j]]])) {
         if(verbose) print("spatial st dev")
         X[[store.name]][[srex.regions[j]]]$spatial.sd <- 
           c(cdo.spatSd(gcm.file,period,mask=mask), 
             cdo.spatSd(gcm.file,period,mask=mask,monthly=TRUE))
       }
-      if("mean" %in% stats & is.null(X[[store.name]][[srex.regions[j]]]$mean)) {
+      if("mean" %in% stats & !"mean" %in% names(X[[store.name]][[srex.regions[j]]])) {
         if(verbose) print("mean value")
         X[[store.name]][[srex.regions[j]]]$mean <- 
           c(cdo.mean(gcm.file,period,mask=mask), 
             cdo.mean(gcm.file,period,mask=mask,monthly=TRUE))
       }
-      if("corr" %in% stats & is.null(X[[store.name]][[srex.regions[j]]]$corr[[reference]])) {
+      if("corr" %in% stats & !reference %in% names(X[[store.name]][[srex.regions[j]]]$corr)) {
         if(verbose) print("spatial correlation")
         X[[store.name]][[srex.regions[j]]]$corr[[reference]] <- 
           c(cdo.gridcor(gcm.file,ref.file,period,mask=mask), 
             cdo.gridcor(gcm.file,ref.file,period,mask=mask,monthly=TRUE))
       }
-      if("rmse" %in% stats & is.null(X[[store.name]][[srex.regions[j]]]$rmse[[reference]])) {
+      if("rmse" %in% stats & !reference %in% names(X[[store.name]][[srex.regions[j]]]$rmse)) {
         if(verbose) print("rmse")
         mask.j <- gen.mask.srex(destfile=gcm.file,mask.polygon=shape[j,])
         dim(gcm) <- dim(ref) <- c(12,length(attr(ref,"longitude"))*length(attr(ref,"latitude")))
@@ -270,31 +269,25 @@ calculate.statistics.cmip <- function(reference="eraint", period=c(1981,2010),
     attr(X[[store.name]],"unit") <- gcm.unit
     statistics[[variable]][[experiment]][[label.period]][[store.name]] <- X[[store.name]]
     save(file=store.file,statistics)
-    
-    if("rmse" %in% stats) {
-      if(file.exists(gcm.mon.file)) {
-        file.remove(gcm.mon.file)
-      }
-    }
   }
   if("rmse" %in% stats) {
     if(verbose) print("Calculate CMPI for all regions and GCMs")
     X <- statistics[[variable]][[experiment]][[label.period]]
     median.rmse <- list()
     for(region in names(X[[1]])) median.rmse[[region]] <- 
-      median(unlist(lapply(X, function(x) x[[region]]$rmse[[reference]])))
+      median(unlist(lapply(X[grep("gcm",names(X))], function(x) x[[region]]$rmse[[reference]])))
     gcms <- names(X)[grepl("gcm",names(X))]
     for(store.name in gcms) {
       for(region in names(X[[1]])) {
         X[[store.name]][[region]]$cmpi[[reference]] <- 
-          (X[[store.name]][[region]]$rmse-median.rmse[[region]])/median.rmse[[region]]
+          (X[[store.name]][[region]]$rmse[[reference]] -
+             median.rmse[[region]])/median.rmse[[region]]
       }
     }
     statistics[[variable]][[experiment]][[label.period]] <- X
     save(file=store.file,statistics)
   }
   if(verbose) print("Done!")
-  
   invisible(statistics)
 }
 
