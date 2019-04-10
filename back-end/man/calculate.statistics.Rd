@@ -1,6 +1,5 @@
 \name{calculate.statistics}
-\alias{calculate.statistics.cmip}
-\alias{calculate.rmse.cmip}
+\alias{calculate.statistics.cmip5}
 \alias{calculate.mon.weights}
 \title{Calculate statistics}
 \description{
@@ -9,13 +8,13 @@
 \code{calculate.mon.weights} calculates weights based on the latitude and number of days per month that are used in \code{calculate.rmse.cmip}.
 }
 \usage{
-calculate.statistics.cmip(reference="eraint", period=c(1981,2010),
-                          variable="tas", experiment="rcp45", nfiles=5,
-                          path.gcm=NULL, continue=TRUE, 
-                          path=NULL, mask="coords.txt", 
-                          store.file="statistics.rda",
-                          stats=c("mean","spatial.sd","corr","rmse"),
-                          verbose=FALSE)
+calculate.statistics.cmip5(reference="eraint", period=c(1981,2010),
+                           variable="tas", experiment="rcp45", nfiles=5,
+                           path.gcm=NULL, add=TRUE, force=FALSE,
+                           path=NULL, mask="coords.txt", 
+                           store.file="statistics.rda",
+                           stats=c("mean","spatial.sd","corr","rmse"),
+                           verbose=FALSE)
 calculate.mon.weights(lon,lat)
 }
 \arguments{
@@ -33,7 +32,8 @@ calculate.mon.weights(lon,lat)
   'corr' = annual and monthly mean spatial correlation of the GCM and a reference data set,
   'rmse' = root mean square error of the mean seasonal cycle of a GCM compared to a reference data set,
   'cmpi' = climate model performance index, i.e., the normalised rmse.}
-  \item{continue}{if TRUE add statistics to existing file, if FALSE create new file}
+  \item{add}{if TRUE add statistics to existing file, if FALSE create new file}
+  \item{force}{if TRUE calculate new statistics to replace existing values}
   \item{mask}{a spatial mask}
   \item{lon}{a vector containing longitudes}
   \item{lat}{a vector containing latitudes}
