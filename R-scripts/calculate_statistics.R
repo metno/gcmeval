@@ -10,7 +10,7 @@ path <- dirname(dir[grepl("gcmeval",dir)])
 setwd(path[1])
 
 # If you have already downloaded GCM data, set path here:
-path <- "/vol/lustre/storeA/users/kajsamp/Data/CMIP5/KNMI"
+path <- "/path/to/gcmdata"
 
 ## To install gcmeval package: 
 ## R CMD INSTALL gcmeval/back-end 
