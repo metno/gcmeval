@@ -43,6 +43,7 @@ python.getEra(start,end,varid,steps,type,stream,outfile,verbose=FALSE)
 \item{passwd}{password to access the CEDA datasets (to download CRU data)}
 \item{time.resol}{time resolution}
 \item{version}{data set version (EOBS data)}
+\item{path}{local path to the reference data}
 \item{start}{start year}
 \item{end}{end year}
 \item{varid}{variable ID for getting ERAinterim data from ECMWF, e.g. 167.128 for temperature and 228.128 for precipitation}

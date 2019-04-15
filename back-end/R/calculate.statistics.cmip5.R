@@ -10,19 +10,21 @@ calculate.statistics.cmip5 <- function(reference="eraint", period=c(1981,2010),
   if(verbose) print("calculate.statistics.cmip")
   shape <- get.shapefile("referenceRegions.shp")
   srex.regions <- as.character(shape$LAB)
-  if(max(period)>2015) reference <- NULL
+  if(min(period)>2010) reference <- NULL
   
   if(verbose) print("Find GCM files and check unit")
   urls <- cmip5.urls(varid=variable,experiment=experiment)
   ngcm <- length(urls)
-  gcm.file <- file.path(path.gcm, paste0('GCM[0-9]{1,3}.',variable,'.',experiment,'.nc'))
+  gcm.file <- file.path(path.gcm, paste0('GCM1.',variable,'.',experiment,'.nc'))
   if(!file.exists(gcm.file)) Y <- getCM(url=urls[1], destfile=gcm.file)
   nc <- ncdf4::nc_open(gcm.file)
   units <- nc$var[[length(nc$var)]]$units
   ncdf4::nc_close(nc)
   
   if(verbose) print("Prepare reference data")
-  if(!is.null(reference)) {
+  if(is.null(reference)) {
+    stats <- stats[!stats %in% c("corr","rmse")]
+  } else {
     ref.file <- getReference(reference,variable)
     if(!is.character(ref.file)) {
       reference <- NULL
@@ -67,8 +69,6 @@ calculate.statistics.cmip5 <- function(reference="eraint", period=c(1981,2010),
         ref.file <- "ref.nc"
       }
     }
-  } else {
-    stats <- stats[!stats %in% c("corr","rmse")]
   }
   
   if(!is.null(reference) && "corr" %in% stats) ref.corr <- ref.file
@@ -173,7 +173,6 @@ calculate.statistics.cmip5 <- function(reference="eraint", period=c(1981,2010),
   for(i in start:end) {
     if(verbose) print(paste0("GCM ",i))
     store.name <- paste("gcm",i,sep=".")
-    gcm.file <- gcm.files[i]
     gcm.file <- file.path(path.gcm,
       paste0('GCM',i,'.',variable,'.',experiment,'.nc'))
     if(!file.exists(gcm.file)) {
@@ -194,35 +193,37 @@ calculate.statistics.cmip5 <- function(reference="eraint", period=c(1981,2010),
         X[[store.name]]$global$mean <- c(cdo.mean(gcm.file,period),
                                          cdo.mean(gcm.file,period,monthly=TRUE))
     }
-    if("corr" %in% stats & 
-       (!reference %in% names(X[[store.name]]$global$corr) | force)) {
-       if(verbose) print("spatial correlation")
-       res.gcm <- resolution(gcm.file, dim=c("lat","latitude"))
-       res.ref <- resolution(ref.corr, dim=c("lat","latitude"))
-       if(res.ref!=res.gcm) {
-         ref.new <- gsub(".nc",paste0("_",sprintf("%.2f",res.gcm),"deg.nc"),ref.corr)
-         if(file.exists(ref.new)) {
-           ref.corr <- ref.new
-         } else {
-           if(verbose) print("Regrid reference data to GCM grid")
-           cdo.regrid(ref.corr,ref.new,res.lon=res.gcm,res.lat=res.gcm,
-                      remap="remapcon",verbose=verbose)
-           ref.corr <- ref.new
-         }
-       } 
+    if("corr" %in% stats) {
+      if(!reference %in% names(X[[store.name]]$global$corr) | force) {
+        if(verbose) print("spatial correlation")
+        res.gcm <- resolution(gcm.file, dim=c("lat","latitude"))
+        res.ref <- resolution(ref.corr, dim=c("lat","latitude"))
+        if(res.ref!=res.gcm) {
+          ref.new <- gsub(".nc",paste0("_",sprintf("%.2f",res.gcm),"deg.nc"),ref.corr)
+          if(file.exists(ref.new)) {
+            ref.corr <- ref.new
+          } else {
+            if(verbose) print("Regrid reference data to GCM grid")
+            cdo.regrid(ref.corr,ref.new,res.lon=res.gcm,res.lat=res.gcm,
+                       remap="remapcon",verbose=verbose)
+            ref.corr <- ref.new
+          }
+        }
+      }  
       X[[store.name]]$global$corr[[reference]] <- c(cdo.gridcor(gcm.file,ref.corr,period),
           cdo.gridcor(gcm.file,ref.corr,period,monthly=TRUE))
     }
-    if("rmse" %in% stats & 
-       (!reference %in% names(X[[store.name]]$global$rmse) | force)) {
-      if(verbose) print("rmse")
-      gcm.mon.file <- file.path(path,"gcm.monmean.nc")
-      cdo.command(c("-ymonmean","-selyear"),c("",paste(period,collapse="/")),
-                  gcm.file, gcm.mon.file)
-      gcm <- zoo::coredata(esd::retrieve.default(gcm.mon.file))
-      dim(gcm) <- dim(ref) <- c(12,length(attr(ref,"longitude")),length(attr(ref,"latitude")))
-      X[[store.name]]$global$rmse[[reference]] <- sqrt(sum(weights*(gcm-ref)^2)/sum(weights))
-      file.remove(gcm.mon.file)
+    if("rmse" %in% stats) { 
+      if(!reference %in% names(X[[store.name]]$global$rmse) | force) {
+        if(verbose) print("rmse")
+        gcm.mon.file <- file.path(path,"gcm.monmean.nc")
+        cdo.command(c("-ymonmean","-selyear"),c("",paste(period,collapse="/")),
+                    gcm.file, gcm.mon.file)
+        gcm <- zoo::coredata(esd::retrieve.default(gcm.mon.file))
+        dim(gcm) <- dim(ref) <- c(12,length(attr(ref,"longitude")),length(attr(ref,"latitude")))
+        X[[store.name]]$global$rmse[[reference]] <- sqrt(sum(weights*(gcm-ref)^2)/sum(weights))
+        file.remove(gcm.mon.file)
+      }
     }
     for(j in 1:length(srex.regions)) {
       if(verbose) print(paste0("Region ",j,": ",srex.regions[j]))
@@ -242,25 +243,27 @@ calculate.statistics.cmip5 <- function(reference="eraint", period=c(1981,2010),
           c(cdo.mean(gcm.file,period,mask=mask), 
             cdo.mean(gcm.file,period,mask=mask,monthly=TRUE))
       }
-      if("corr" %in% stats & 
-         (!reference %in% names(X[[store.name]][[srex.regions[j]]]$corr) | force)) {
-        if(verbose) print("spatial correlation")
-        X[[store.name]][[srex.regions[j]]]$corr[[reference]] <- 
-          c(cdo.gridcor(gcm.file,ref.corr,period,mask=mask), 
-            cdo.gridcor(gcm.file,ref.corr,period,mask=mask,monthly=TRUE))
+      if("corr" %in% stats) { 
+        if(!reference %in% names(X[[store.name]][[srex.regions[j]]]$corr) | force) {
+          if(verbose) print("spatial correlation")
+          X[[store.name]][[srex.regions[j]]]$corr[[reference]] <- 
+            c(cdo.gridcor(gcm.file,ref.corr,period,mask=mask), 
+              cdo.gridcor(gcm.file,ref.corr,period,mask=mask,monthly=TRUE))
+        }   
       }
-      if("rmse" %in% stats & 
-         (!reference %in% names(X[[store.name]][[srex.regions[j]]]$rmse) | force)) {
-        if(verbose) print("rmse")
-        mask.j <- gen.mask.srex(destfile=gcm.file,mask.polygon=shape[j,])
-        dim(gcm) <- dim(ref) <- c(12,length(attr(ref,"longitude"))*length(attr(ref,"latitude")))
-        gcm.masked <- mask.zoo(gcm,mask.j)
-        ref.masked <- mask.zoo(ref,mask.j)
-        dim(gcm.masked) <- dim(ref.masked) <- 
-          c(12,length(attr(ref,"longitude")),length(attr(ref,"latitude")))
-        X[[store.name]][[srex.regions[j]]]$rmse[[reference]] <- 
-          sqrt(sum(weights*(gcm.masked-ref.masked)^2,na.rm=TRUE)/
+      if("rmse" %in% stats) { 
+        if(!reference %in% names(X[[store.name]][[srex.regions[j]]]$rmse) | force) {
+          if(verbose) print("rmse")
+          mask.j <- gen.mask.srex(destfile=gcm.file,mask.polygon=shape[j,])
+          dim(gcm) <- dim(ref) <- c(12,length(attr(ref,"longitude"))*length(attr(ref,"latitude")))
+          gcm.masked <- mask.zoo(gcm,mask.j)
+          ref.masked <- mask.zoo(ref,mask.j)
+          dim(gcm.masked) <- dim(ref.masked) <- 
+            c(12,length(attr(ref,"longitude")),length(attr(ref,"latitude")))
+          X[[store.name]][[srex.regions[j]]]$rmse[[reference]] <- 
+            sqrt(sum(weights*(gcm.masked-ref.masked)^2,na.rm=TRUE)/
                  sum(weights[!is.na(gcm.masked)]))
+        }
       }
     }
     if (variable=="tas") {
