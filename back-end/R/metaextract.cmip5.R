@@ -96,7 +96,6 @@ metaextract.cmip5 <- function(x=NULL, experiment="rcp45", verbose=FALSE) {
         qf <- c(qf,"Discrepancy between experiment_rip and model history in netCDF header.")
       }
     }
-
     if(!is.na(filename)) filename <- gsub(".*/","",filename)
     mx <- data.frame(project_id=project_id, url=url, filename=filename,
                      dim=paste(dim,collapse=","), dates=dates, var=paste(var,collapse=","),
