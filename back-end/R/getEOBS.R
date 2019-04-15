@@ -22,7 +22,6 @@ getEOBS <- function(variable="tas", destfile=NULL, version="17",#resolution="0.5
   commands <- c("-f","nc","-copy","-monavg")
   input <- c("","","","")
   if(!file.exists(destfile)) cdo.command(commands,input,infile=filename,outfile=destfile)
-  #X <- esd::retrieve.ncdf4(destfile,lon=lon,lat=lat,verbose=verbose)
   cid <- getatt(destfile) 
   cid$url <- paste(url.path,filename,sep="/")
   #cdo.command("-fldmean","",destfile,"tmp.nc")
@@ -34,7 +33,11 @@ getEOBS <- function(variable="tas", destfile=NULL, version="17",#resolution="0.5
   #system("rm tmp.nc")
   ncid <- ncdf4::nc_open(destfile)
   model <- ncdf4::ncatt_get(ncid,0)
+  ncid2 <- esd::check.ncdf4(ncid,param=names(cid$var))
+  cid$dates <- paste(range(ncid2$time$vdate),collapse=",")
   ncdf4::nc_close(ncid)
+  #X <- esd::retrieve.ncdf4(destfile,lon=lon,lat=lat,verbose=verbose)
+  #cid$dates <- paste(range(zoo::index(X)),collapse=",")
   cid$model <- model
   invisible(cid)
 }

@@ -36,20 +36,21 @@ getERA <- function(variable,start=1979,end=2017,griddes="cmip_1.25deg_to_2.5deg.
     cdo.command(commands,input,destfile,outfile)
   }
   if(verbose) print("Retrieve data from netCDF file.")
-  #X <- esd::retrieve.ncdf4(outfile)
   cid <- getatt(outfile)
   if(verbose) print("Calculate area mean and sd.")
-  #cid$area.mean <- esd::aggregate.area(X,FUN='mean')
-  #cid$area.sd <- esd::aggregate.area(X,FUN='sd')
   cid$url <- NA
-  #cid$dates <- paste(range(zoo::index(X)),collapse=",")
   if(verbose) print("Get information about the model and netCDF file.")
   ncid <- ncdf4::nc_open(outfile)
   model <- ncdf4::ncatt_get(ncid,0)
+  ncid2 <- esd::check.ncdf4(ncid,param=names(cid$var))
+  cid$dates <- paste(range(ncid2$time$vdate),collapse=",")
   ncdf4::nc_close(ncid)
+  #X <- esd::retrieve.ncdf4(outfile)
+  #cid$area.mean <- esd::aggregate.area(X,FUN='mean')
+  #cid$area.sd <- esd::aggregate.area(X,FUN='sd')
+  #cid$dates <- paste(range(zoo::index(X)),collapse=",")
   cid$model <- model
   cid$project_id <- cid$model$project_id
-  #cid$srex <- get.srex.region(outfile,region=NULL,print.srex=FALSE,verbose=FALSE)
   if(verbose) print("--- end getERA ---")
   invisible(cid)
 }

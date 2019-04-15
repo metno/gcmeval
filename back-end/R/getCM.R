@@ -8,8 +8,10 @@ getCM <- function(url=NULL,destfile='CM.nc',path=NULL,
   if(!is.null(path)) destfile <- file.path(path,destfile)
   if (file.exists(destfile) & !force) {
     if(verbose) print(paste("File",destfile,"exists. Check file."))
-    X <- try(esd::retrieve.default(destfile,lon=lon,lat=lat,verbose=FALSE), silent=TRUE)
-    if (inherits(X,"try-error")) force <- TRUE # If downloaded file is incomplete, force new download
+    ncid <- ncdf4::nc_open(destfile)
+    if (inherits(ncid,"try-error")) force <- TRUE # If downloaded file is incomplete, force new download
+    #X <- try(esd::retrieve.ncdf4(destfile,lon=lon,lat=lat,verbose=FALSE), silent=TRUE)
+    #if (inherits(X,"try-error")) force <- TRUE # If downloaded file is incomplete, force new download
   }
   if (!file.exists(destfile) | force) {
     if(verbose) print(paste("Download file from",url))
@@ -18,15 +20,17 @@ getCM <- function(url=NULL,destfile='CM.nc',path=NULL,
       try(file.remove(destfile), silent=TRUE)
       return()
     }
-    X <- try(esd::retrieve.default(destfile,lon=lon,lat=lat,verbose=FALSE), silent=TRUE)
+    ncid <- ncdf4::nc_open(destfile)
+    #X <- try(esd::retrieve.ncdf4(destfile,lon=lon,lat=lat,verbose=FALSE), silent=TRUE)
   }
   ## Collect information stored in the netCDF header
   cid <- getatt(destfile)
   ## Extract a time series for the area mean for 
   cid$url <- url
-  #cid$dates <- paste(range(zoo::index(X)),collapse=",")
   ## Collect information stored as model attributes
-  ncid <- ncdf4::nc_open(destfile)
+  #ncid <- ncdf4::nc_open(destfile)
+  ncid2 <- esd::check.ncdf4(ncid,param=names(cid$var))
+  cid$dates <- paste(range(ncid2$time$vdate),collapse=",")
   model <- ncdf4::ncatt_get(ncid,0)
   ncdf4::nc_close(ncid)
   cid$model <- model
