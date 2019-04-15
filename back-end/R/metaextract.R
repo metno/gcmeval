@@ -44,7 +44,7 @@ metaextract <- function(x=NULL,add=TRUE,file="meta.rda",verbose=FALSE) {
       for(n in new.cols) Y[[n]] <- rep(NA,nrow(Y))
     }
     meta <- rbind(meta.old,Y)
-    meta <- meta[!duplicated(meta),]
+    #meta <- meta[!duplicated(meta),]
     gcm.i <- substr(meta$url,regexpr("[0-9]{3}.nc",meta$url),
                     nchar(as.character(meta$url))-3)
     meta$gcm.i <- gcm.i
@@ -55,6 +55,7 @@ metaextract <- function(x=NULL,add=TRUE,file="meta.rda",verbose=FALSE) {
     Y -> meta
     meta <- meta[!duplicated(meta),]
   }
+  meta <- meta[!duplicated(meta),]
   save(meta,file=file)
   return(meta)
 }
