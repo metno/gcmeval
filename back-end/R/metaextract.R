@@ -53,6 +53,7 @@ metaextract <- function(x=NULL,add=TRUE,file="meta.rda",verbose=FALSE) {
     meta <- meta[order(id),]
   } else {
     Y -> meta
+    meta <- meta[!duplicated(meta),]
   }
   save(meta,file=file)
   return(meta)
