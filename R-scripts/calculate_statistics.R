@@ -10,13 +10,13 @@ path <- dirname(dir[grepl("gcmeval",dir)])
 setwd(path[1])
 
 # If you have already downloaded GCM data, set path here:
-path <- "/path/to/gcmdata"
+#path <- "/path/to/data"
 
 ## To install gcmeval package: 
 ## R CMD INSTALL gcmeval/back-end 
 ## Requires rgdal, raster, esd (zoo, ncdf4), RCurl
 
-get.meta <- FALSE
+get.meta <- TRUE
 get.stats <- TRUE
 
 ## Calculate statistics for CMIP5 data
@@ -53,7 +53,7 @@ if(get.meta) {
     for(rcp in c("rcp45","rcp85")) {
       x <- getGCMs(select=1:110,varid=varid,experiment=rcp,
                    verbose=opt$verbose,path=opt$path)
-      y <- metaextract(x,verbose=opt$verbose,add=add)
+      y <- metaextract(x,verbose=opt$verbose,add=add,file="meta.rda")
       add <- TRUE # change add to TRUE so metadata is added to old file
     }
   }
@@ -66,19 +66,22 @@ if(get.stats) {
   for (varid in c("pr","tas")) {
     print(paste("Calculate annual cycle statistics of",varid))
     for(rcp in c("rcp85","rcp45")) {
-       for (it in list(opt$it.ref,c(2071,2100),c(2021,2050))) {
+      for (it in list(opt$it.ref,c(2071,2100),c(2021,2050))) {
         print(paste("period:",paste(it,collapse="-"),
                     "; scenario:",rcp))
         if(all(it==opt$it.ref)) {
           ref.var <- switch(varid, "tas"=opt$ref.tas, "pr"=opt$ref.pr)
-	      } else {
-	        ref.var <- NULL
-	      }
-      	for(ref in ref.var) {
-          calculate.statistics.cmip5(reference=ref, period=it,
-	        variable=varid, path.gcm=opt$path, nfiles=opt$nfiles,
-	        add=opt$add, mask=opt$mask, experiment=rcp,
-	        verbose=opt$verbose, force=opt$force, stats=stats)
+          for(ref in ref.var) {
+            calculate.statistics.cmip5(reference=ref, period=it,
+                                       variable=varid, path.gcm=opt$path, nfiles=opt$nfiles,
+                                       add=opt$add, mask=opt$mask, experiment=rcp,
+                                       verbose=opt$verbose, force=opt$force, stats=stats)
+          }
+        } else {
+          calculate.statistics.cmip5(reference=NULL, period=it,
+	          variable=varid, path.gcm=opt$path, nfiles=opt$nfiles,
+	          add=opt$add, mask=opt$mask, experiment=rcp,
+	          verbose=opt$verbose, force=opt$force, stats=stats)
      	  }
       }
     }
