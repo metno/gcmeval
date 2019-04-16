@@ -195,7 +195,7 @@ shinyServer(function(input, output, session) {
                  paste("secondary region:<br>",input$regionwm2),
                  "temperature", "precipitation",
                  "all year","dec-feb","mar-apr","jun-jul","sep-nov",
-                 "bias","spatial correlation","spatial sd ratio","RMSE"),
+                 "bias","spatial correlation","spatial sd ratio","RMSE of annual cycle"),
                c(input$wmreg1,
                  input$wmreg2,
                  input$wmdt,input$wmdp,

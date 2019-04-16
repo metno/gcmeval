@@ -189,7 +189,7 @@ dashboardPage(
                 ),
                 selectInput(
                   "wmrmse",
-                  label = HTML("RMSE"),
+                  label = HTML("RMSE of annual cycle"),
                   choices = c(
                     "Not important (0)" = 0,
                     "Important (1)" = 1,
