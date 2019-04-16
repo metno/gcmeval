@@ -5,16 +5,18 @@ source("global.R")
 shinyServer(function(input, output, session) {
 
   stats <- reactive({
-    X <- stats.both[[clean(input$rcp)]]
-    for(var in names(X)) {
-      for(period in names(X[[var]])) {
-        n <- names(X[[var]][[period]])
+    Y <- list()
+    for(var in names(stats.both)) {
+      X <- stats.both[[var]][[clean(input$rcp)]]
+      for(period in names(X)) {
+        plab <- periodlabel(period)
+        n <- names(X[[period]])
         gcms <- n[grepl("gcm",n)][gcmnames %in% input$baseensemble]
         i <- which(n %in% gcms | !grepl("gcm",n))
-        X[[var]][[period]] <- X[[var]][[period]][i]
+        Y[[var]][[plab]] <- X[[period]][i]
       }
     }
-    return(X)
+    return(Y)
   })
 
   gcmst <- reactive({
@@ -66,8 +68,8 @@ shinyServer(function(input, output, session) {
                              "near future (2021-2050)"='nf')})
 
   ## Weighted rank calculations
-  tasRanks <- reactive({ranking.all(stats=stats(),varid="tas",Regions=Regionlist())})
-  prRanks <- reactive({ranking.all(stats=stats(),varid="pr",Regions=Regionlist())})
+  tasRanks <- reactive({ranking.all(stats=stats(),varid="tas",ref=input$tasref,Regions=Regionlist())})
+  prRanks <- reactive({ranking.all(stats=stats(),varid="pr",ref=input$prref,Regions=Regionlist())})
 
   seas_varweightedranks <- reactive({
     as.numeric(input$wmdt)*tasRanks()+as.numeric(input$wmdp)*prRanks()})
@@ -87,7 +89,7 @@ shinyServer(function(input, output, session) {
     invisible(W)
   })
   
-  metweightvec <- reactive({as.numeric(c(input$wmbias,input$wmsd,input$wmsc,input$wmcmpi))})
+  metweightvec <- reactive({as.numeric(c(input$wmbias,input$wmsd,input$wmsc,input$wmrmse))})
   weightedrank_all <- reactive({rank(weightedranks_all() %*% metweightvec())})
   
   best <- reactive({
@@ -198,7 +200,7 @@ shinyServer(function(input, output, session) {
                  input$wmreg2,
                  input$wmdt,input$wmdp,
                  input$wmann,input$wmdjf,input$wmmam,input$wmjja,input$wmson,
-                 input$wmbias,input$wmsc,input$wmsd,input$wmcmpi))
+                 input$wmbias,input$wmsc,input$wmsd,input$wmrmse))
     colnames(Z) <- c("Parameter","Weight")
     return(Z)
   })

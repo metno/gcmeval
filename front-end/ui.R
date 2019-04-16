@@ -188,7 +188,7 @@ dashboardPage(
                   selected = 1
                 ),
                 selectInput(
-                  "wmcmpi",
+                  "wmrmse",
                   label = HTML("RMSE"),
                   choices = c(
                     "Not important (0)" = 0,
@@ -236,14 +236,14 @@ dashboardPage(
                selectInput(
                  "tasref", 
                  label = "Reference data set, temperature",
-                 choices = c("ERAinterim"),
-                 selected = "ERAinterim"
+                 choices = c("ERA5","ERAinterim"),
+                 selected = "ERA5"
                ),
                selectInput(
                  "prref", 
                  label = "Reference data set, precipitation",
-                 choices = c("ERAinterim"),
-                 selected = "ERAinterim"
+                 choices = c("ERA5","ERAinterim","GPCP"),
+                 selected = "GPCP"
                ),
                menuItem("Exclude climate models", tabname="ensemble", icon=NULL,
                 checkboxGroupInput(
@@ -369,19 +369,19 @@ dashboardPage(
           "This code is partially based on the R-package 'esd' which is also freely available",
           a("(http://github.com/metno/esd/).", href =
               "https://github.com/metno/esd"),
-          h4("Method"),
-          helpText(HTML(
-            paste(
-              "The combined model performance index (CMPI) summarizes the ",
-              "root mean square differences for multiple variables (following ",
-              "Gleckler et al. 2008: Performance metrics for climate models, ",
-              "J. Geophys. Res., 113, D06104, doi:10.1029/2007JD008972). ",
-              "Here, it is normalised with respect to the median rmse within the full ensemble."
-            )
-          ))
+          h4("Method")#,
+          #helpText(HTML(
+          #  paste(
+          #    "The combined model performance index (CMPI) summarizes the ",
+          #    "root mean square differences for multiple variables (following ",
+          #    "Gleckler et al. 2008: Performance metrics for climate models, ",
+          #    "J. Geophys. Res., 113, D06104, doi:10.1029/2007JD008972). ",
+          #    "Here, it is normalised with respect to the median rmse within the full ensemble."
+          #  )))
+          )
         )
       )
     )
   )
-  )
 )
+

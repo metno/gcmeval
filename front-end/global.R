@@ -57,8 +57,8 @@ regionlist <- c(
   "West Indian Ocean"
 )
 
-# Load meta data
-data(package="gcmeval", "metaextract", envir=environment())
+# Load metadata and statistics
+data(package="gcmeval", "meta", envir=environment())
 
 clean <- function(x) {
   gsub("[[:punct:]]|[[:space:]]","",tolower(x))
@@ -70,6 +70,13 @@ meta$gcmtag <- gcm.i
 
 ## Load geographical data for map
 data(package="esd", "geoborders", envir=environment())
+
+periodlabel <- function(x="period.1981_2010") {
+  plab <- switch(x, "period.1981_2010"="present",
+                 "period.2071_2100"="ff",
+                 "period.2021_2050"="nf")
+  return(plab)
+}
 
 # Load stats and remove not common GCMs from stats
 metaPrep <- function(rcp="rcp45") {
@@ -122,41 +129,24 @@ metaPrep <- function(rcp="rcp45") {
 # Load stats and remove not common GCMs from stats
 dataPrep <- function(rcp="rcp45") {
   ## Load statistics calculated with script 'calculate_statistics.R'
-  # Remove when new statistics files with RCP8.5 have been added
-  stats <- NULL
+  ## and remove data that will not be used in front-end
+  data(package="gcmeval", "statistics", envir=environment())
+  stats <- statistics
   gcmnames <- metaPrep(rcp=rcp)
-  period.yr <- c("1981-2010","2021-2050","2071-2100")
-  period.nm <- c("present","nf","ff")
-  if("both" %in% rcp) rcp <- c("rcp45","rcp85")
-  for(var in c("tas","pr")) {
-    for(i in seq_along(period.yr)) {
-      for(exp in rcp) {
-        if(period.nm[i]=="present") {
-          eval(parse(text=paste('data(package="gcmeval", "statistics.cmip.era.',var,".",
-                                period.yr[i],".",clean(exp),
-                                '", envir=environment())',sep="")))
-        } else {
-          eval(parse(text=paste('data(package="gcmeval", "statistics.cmip.',var,".",
-                                period.yr[i],".",clean(exp),
-                                '", envir=environment())',sep="")))
-        }
-        stats[[exp]][[var]][[period.nm[i]]] <- store
-      }
-    }
-  }
-  for(exp in rcp) {
-    for(varid in c("tas","pr")) {
+  stats <- statistics
+  if("both" %in% rcp | is.null(rcp)) rcp <- c("rcp45","rcp85")
+  for(varid in names(stats)) {
+    if(length(rcp)==1) stats[[varid]] <- stats[[varid]][[rcp]]
+    for(exp in rcp) {
       i.var <- meta$var==varid & meta$project_id=="CMIP5" & clean(meta$experiment)==exp
       gcm.var <- paste(meta$gcm[i.var], clean(meta$gcm_rip[i.var]), sep=".")
       gcm.i <- meta$gcmtag[i.var]
       reject <- which(!(gcm.var %in% gcmnames))
       for (i in reject) {
-        j <- which(clean(names(stats[[exp]][[varid]]$nf))==gcm.i[i])
-        stats[[exp]][[varid]]$nf[[j]] <- NULL
-        j <- which(clean(names(stats[[exp]][[varid]]$ff))==gcm.i[i])
-        stats[[exp]][[varid]]$ff[[j]] <- NULL
-        j <- which(clean(names(stats[[exp]][[varid]]$present))==gcm.i[i])
-        stats[[exp]][[varid]]$present[[j]] <- NULL
+        for(period in names(stats[[varid]][[exp]])) {
+          j <- which(clean(names(stats[[varid]][[exp]][[period]]))==gcm.i[i])
+          stats[[varid]][[exp]][[period]][[j]] <- NULL
+        }
       }
     }
   }
@@ -164,14 +154,14 @@ dataPrep <- function(rcp="rcp45") {
   return(stats)
 }
 
-stats.both <- dataPrep(rcp=c("rcp45","rcp85"))
+stats.both <- dataPrep(rcp="both")
 gcmnames <- attr(stats.both,"gcmnames")
 gcmnames <- paste(seq(gcmnames),gcmnames,sep=": ")
 
 regions <- function(type=c("srex","prudence"),region=NULL) {
   if(is.null(type) | length(type)>1) region <- NULL
   if(is.null(type) | "srex" %in% tolower(type)) {
-    f <- "../../back-end/inst/extdata/SREX_regions/referenceRegions.shp"
+    f <- "../back-end/inst/extdata/SREX_regions/referenceRegions.shp"
     x <- get.shapefile(f,with.path=TRUE)
     ivec <- 1:nrow(x)
     if(!is.null(region)) {
@@ -194,7 +184,7 @@ regions <- function(type=c("srex","prudence"),region=NULL) {
     y <- NULL
   }
   if(is.null(type) | "prudence" %in% tolower(type)) {
-    f <- "../../back-end/inst/extdata/PRUDENCE_regions/RegionSpecifications.csv"
+    f <- "../back-end/inst/extdata/PRUDENCE_regions/RegionSpecifications.csv"
     x <- read.table(f,sep=",")
     ivec <- 2:nrow(x)
     names <- as.character(x[2:nrow(x),1])
@@ -232,9 +222,12 @@ srex <- regions("srex")
 
 #model ranks for seasons, metrics and selected focus regions
 ranking <- function(stats=NULL,measure="bias",varid="tas",season="ann",
-                    region="global",rcp=NULL,im=NULL) {
-  if(is.null(stats)) stats <- dataPrep(rcp=rcp)
-  X <- switch(varid, tas=stats$tas$present, pr=stats$pr$present)
+                    region="global",ref=NULL,rcp="rcp45",im=NULL) {
+  if(is.null(stats)) {
+    stats <- stats.both[[varid]][[clean(rcp)]]
+    names(stats) <- periodlabel(names(X))
+  }
+  X <- switch(varid, tas=stats$tas$"present", pr=stats$pr$"present")
   if(tolower(region)=="global") {
     region <- "global"
   } else {
@@ -249,60 +242,70 @@ ranking <- function(stats=NULL,measure="bias",varid="tas",season="ann",
                      "son"=c("sep","oct","nov"), "Autumn"=c("sep","oct","nov"))
   }
   gcms <- names(X)[grepl("gcm",names(X))]
-  ref <- names(X)[!grepl("gcm",names(X))]
-  if(is.null(im)) im <- 1:length(gcms)
-  if(ref=="era.pr") {
-    X.ref <- X[ref]
-    X.ref <- lapply(X[ref],function(x) lapply(x, function(y) lapply(y, function(z) z*1E3/(60*60*24))))
-    X[ref] <- X.ref
+  ref.all <- names(X)[!grepl("gcm",names(X))]
+  if(is.null(ref)) {
+    ref <- ref.all[1]
+  } else {
+    ref <- ref.all[sapply(ref.all,function(x) grepl(x,clean(ref)))]
   }
+  if(is.null(im)) im <- 1:length(gcms)
   if(measure=="bias") {
     skill <- rank(abs(sapply(gcms[im], function(gcm) mean(sapply(season, function(s)
       X[[gcm]][[region]][["mean"]][[s]]-X[[ref]][[region]][["mean"]][[s]])))))
-  } else if (measure=="sd.ratio") {
+  } else if (tolower(measure)=="sd.ratio") {
     skill <- rank(abs(1-sapply(gcms[im], function(gcm) mean(sapply(season, function(s)
       X[[gcm]][[region]][["spatial.sd"]][[s]]/X[[ref]][[region]][["spatial.sd"]][[s]])))))
-  } else if (measure=="corr") {
+  } else if (tolower(measure)=="corr") {
     skill <- rank(1-sapply(gcms[im], function(gcm) mean(sapply(season, function(s)
-      X[[gcm]][[region]][[measure]][[s]]))))
-  } else if (tolower(measure) %in% c("cmpi","e")) {
-    skill <- try(rank(-1*sapply(gcms[im], function(gcm) X[[gcm]][[region]][[measure]])))
+      X[[gcm]][[region]][[measure]][[ref]][[s]]))))
+  } else if (tolower(measure) %in% c("cmpi","rmse")) {
+    skill <- rank(sapply(gcms[im], function(gcm) X[[gcm]][[region]][[measure]][[ref]]))
   }
   return(skill)
 }
 
 ranking.all <- function(stats=NULL,varid="tas",Regions=list("global","Amazon [AMZ:7]"),
-                        Seasons=c("ann","djf","mam","jja","son"),rcp=NULL,im=NULL) {
-  if(is.null(stats)) stats <- dataPrep(rcp=rcp)
+                        Seasons=c("ann","djf","mam","jja","son"),
+                        ref=NULL,rcp=NULL,im=NULL) {
+  if(is.null(stats)) {
+    stats <- stats.both[[varid]][[clean(rcp)]]
+    names(stats) <- periodlabel(names(X))
+  }
   gcms <- names(stats[[varid]]$present)
   gcms <- gcms[grepl("gcm",gcms)]
   if(!is.null(im)) im <- 1:length(gcms)
   Ranks <- array(NA,c(length(gcms),length(Seasons),4,length(Regions)))
   for (si in 1:length(Seasons)) {
     for (ri in 1:length(Regions)) {
-      Ranks[,si,1,ri] <- ranking(stats, measure="bias", varid=varid,
+      Ranks[,si,1,ri] <- ranking(stats, measure="bias", varid=varid, ref=ref,
                                  season=Seasons[si], region=Regions[ri], im=im)
-      Ranks[,si,2,ri] <- ranking(stats, measure="sd.ratio",varid=varid,
+      Ranks[,si,2,ri] <- ranking(stats, measure="sd.ratio",varid=varid, ref=ref,
                                  season=Seasons[si], region=Regions[ri], im=im)
-      Ranks[,si,3,ri] <- ranking(stats, measure="corr", varid=varid,
+      Ranks[,si,3,ri] <- ranking(stats, measure="corr", varid=varid, ref=ref,
                                  season=Seasons[si], region=Regions[ri], im=im)
-      Ranks[,si,4,ri] <- ranking(stats, measure="e", varid=varid,
+      Ranks[,si,4,ri] <- ranking(stats, measure="rmse", varid=varid, ref=ref,
                                  season=Seasons[si], region=Regions[ri], im=im)
     }
   }
   return(Ranks)
 }
 
-ranking.weighted <- function(stats=NULL,regionwm1="global",regionwm2="Amazon [AMZ:7]",wmreg1=1,wmreg2=1,
-                          wmdt=1,wmdp=1,wmann=1,wmdjf=1,wmmam=1,wmjja=1,wmson=1,
-                          wmbias=1,wmsd=1,wmsc=1,wmcmpi=1,rcp=NULL) {
+ranking.weighted <- function(stats=NULL,regionwm1="global",regionwm2="Amazon [AMZ:7]",
+                             wmreg1=1,wmreg2=1,wmdt=1,wmdp=1,
+                             wmann=1,wmdjf=1,wmmam=1,wmjja=1,wmson=1,
+                             wmbias=1,wmsd=1,wmsc=1,wmcmpi=1,
+                             rcp=NULL,ref=NULL) {
   
-  if(is.null(stats)) stats <- dataPrep(rcp=rcp)
+  if(is.null(stats)) {
+    stats <- stats.both[[varid]][[clean(rcp)]]
+    names(stats) <- periodlabel(names(X))
+  }
   Regionlist <- list(regionwm1,regionwm2)
   Regionlist <- Regionlist[which(Regionlist != "---")]
-
-  tasRanks <- ranking.all(stats, varid="tas", Regions=Regionlist, gcms=gcmst)
-  prRanks <- ranking.all(stats, varid="pr", Regions=Regionlist, gcms=gcmsp)
+  tasRanks <- ranking.all(stats, varid="tas", Regions=Regionlist, 
+                          gcms=gcmst, ref=ref)
+  prRanks <- ranking.all(stats, varid="pr", Regions=Regionlist, 
+                         gcms=gcmsp, ref=ref)
 
   #seasonal ranks, weighted for temp and precip
   seas_varweightedranks <- as.numeric(wmdt)*tasRanks+as.numeric(wmdp)*prRanks
@@ -332,7 +335,10 @@ ranking.weighted <- function(stats=NULL,regionwm1="global",regionwm2="Amazon [AM
 
 spread <- function(stats=NULL, varid="tas", season="ann", region="global",
                    period="ff", rcp=NULL, im=NULL) {
-  if(is.null(stats)) stats <- dataPrep(rcp=rcp)
+  if(is.null(stats)) {
+    stats <- stats.both[[varid]][[clean(rcp)]]
+    names(stats) <- periodlabel(names(X))
+  }
   X <- switch(varid, tas=stats$tas, pr=stats$pr)
   if(tolower(region)=="global") {
     region <- "global"
