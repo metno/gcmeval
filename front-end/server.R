@@ -409,13 +409,17 @@ shinyServer(function(input, output, session) {
               name="mean of selection",
               marker=list(symbol='star', color='red', size=10,
                           line=list(color='black', width=1))) %>%
-    layout(p, title=paste0(input$season," climate change, ",input$rcp,"\n",
-                          "Present day (1981-2010) to ",tolower(input$period)),
-           font=list(size=9),
+    add_annotations(x=min(input$xlim) + diff(range(input$xlim))*0.25,
+                   y=max(input$ylim) - diff(range(input$ylim))*0.1,
+		   text=paste0(input$season," climate change, ",input$rcp,"\n",
+                          "Present day (1981-2010) to ",tolower(input$period),"\n",
+			  input$regionwm1),
+		   showarrow=FALSE, font=list(size=11), align="left") %>%
+    layout(p, font=list(size=15),
            xaxis=list(title="Temperature change (deg C)",range=input$xlim),
            yaxis=list(title="Precipitation change (mm/day)",range=input$ylim),
            showlegend=TRUE, 
-           legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=1))
+           legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=4))
   })
   
   # Region 2
@@ -432,13 +436,17 @@ shinyServer(function(input, output, session) {
                 name="mean of selection",
                 marker=list(symbol='star', color='red', size=10,
                             line=list(color='black', width=1))) %>%
-      layout(p, title=paste0(input$season," climate change, ",input$rcp,"\n",
-                             "Present day (1981-2010) to ",tolower(input$period)),
-             font=list(size=9),
+      add_annotations(x=min(input$xlim) + diff(range(input$xlim*0.25)),
+                   y=max(input$ylim) - diff(range(input$ylim*0.1)),
+		   text=paste0(input$season," climate change, ",input$rcp,"\n",
+                          "present day (1981-2010) to ",tolower(input$period),"\n",
+			  input$regionwm2),
+		   showarrow=FALSE, font=list(size=11), align="left") %>%
+      layout(p, font=list(size=15),
              xaxis=list(title="Temperature change (deg C)",range=input$xlim),
              yaxis=list(title="Precipitation change (mm/day)",range=input$ylim),
              showlegend=TRUE, 
-             legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=1))
+             legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=4))
   })
   
   output$clickevent <- renderPrint({

@@ -13,7 +13,7 @@ dashboardPage(
                          numericInput(
                            "ngcm",
                            label = "Ensemble size",
-                           value = 11, min = 1,
+                           value = 10, min = 1,
                            max = length(gcmnames),
                            width = '150px'
                          ),
@@ -36,7 +36,7 @@ dashboardPage(
                            "gcms",
                            label = "Climate models",
                            choices = gcmnames,
-                           selected = gcmnames[1:11],
+                           selected = gcmnames[1:10],
                            inline=TRUE,
                            width='100%'
                          )
@@ -66,7 +66,7 @@ dashboardPage(
                     "regionwm2",
                     label = "Secondary focus region",
                     choices = regionlist,
-                    selected = "Amazon [AMZ:7]"
+                    selected = "global"
                   ),
                   selectInput(
                     "wmreg2",
@@ -123,7 +123,7 @@ dashboardPage(
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
-                  selected = 2
+                  selected = 1
                 ),
                 selectInput(
                   "wmmam",
@@ -133,7 +133,7 @@ dashboardPage(
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
-                  selected = 2
+                  selected = 1
                 ),
                 selectInput(
                   "wmjja",
@@ -143,7 +143,7 @@ dashboardPage(
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
-                  selected = 2
+                  selected = 1
                 ),
                 selectInput(
                   "wmson",
@@ -153,7 +153,7 @@ dashboardPage(
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
-                  selected = 2
+                  selected = 1
                 )
               ),
               menuItem("Skill scores", tabName="skillwm", icon=NULL,
@@ -165,7 +165,7 @@ dashboardPage(
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
-                  selected = 2
+                  selected = 1
                 ),
                 selectInput(
                   "wmsc",
@@ -223,7 +223,7 @@ dashboardPage(
                           label = "Temperature range",
                           min = -20, 
                           max = 20,
-                          step = 0.5,
+                          step = 0.25,
                           value = c(-8,8)),
               sliderInput("ylim", 
                           label = "Precipitation range",
