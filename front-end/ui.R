@@ -345,7 +345,10 @@ dashboardPage(
               collapsed = FALSE,
               br(),
               plotlyOutput("dtdpr1", width = '100%', height = 550),
-              br()
+              br()#,
+	      #actionButton("download1", 
+              #             label = "Download", 
+              #             width = '150px')
             ),
             box(
               label="spread2",
