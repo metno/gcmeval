@@ -219,21 +219,20 @@ shinyServer(function(input, output, session) {
   colorlist <- c("red","orange","yellow","lime","green")
 
   output$IntroText  <- renderText({
-    paste("This is a tool for selecting and evaluating a subset of climate models from the CMIP5 ensemble.",
-          "Here's how it works:<br><br>",
-          "Step 1) Go to <i>'Settings for skill evaluation'</i> in the sidebar and select two focus regions ",
-          "and weights for various meteorological parameters, seasons, and skill scores.<br>",
-          "Step 2) Based on your choices, a weighted <b>model skill evaluation</b> is performed and ",
-          "the climate models are ranked according to their representation of the climate of the past.<br>",
-          "Step 3) Go to <i>'Settings for scatterplots'</i> in the sidebar and select a season, time horizon, and emission scenario.<br>",
-          "Step 4) Look at the <b>spread of the regional mean climate change</b> which shows scatterplots of ",
-          "the projected regional mean change in temperature and precipitation for the two focus regions.<br>",
-          "Step 5) Now you can go to <i>'Model selection'</i> in the sidebar and pick a subset of models ",
-          "using the information of the skill evaluation and the scatterplots.<br><br>",
-          "Our suggested approach is to exclude climate models that represent the climate of the past very poorly. ",
-          "Then, pick a subset out of the well performing models that preserves the statistical characteristics (the spread and mean) of climate change of the full ensemble.",
-          "Small changes in the weights and regions of interest can drastically change the outcome, ",
-          "so make sure to try some different settings before picking a subset of models.")
+    paste("This is a tool to help you evaluate subsets of climate models from the CMIP5 ensemble.<br><br>",
+          "Step 1) In the <i>'Settings for skill evaluation'</i> menu, select two focus regions ",
+          "and set the weights for the regions and various meteorological parameters, seasons, and skill scores. ",
+	  "Based on your choices, a weighted <b>model skill evaluation</b> is performed and ",
+          "the climate models are ranked according to their representation of the climate of the past. ",
+	  "Note that small changes in weights and regions can significantly change the ranking.<br><br>",
+          "Step 2) In the <i>'Settings for scatterplots'</i> menu, select a season, time horizon, and emission scenario for the",
+          "scatterplots which show the <b>spread of the regional mean climate change</b> among the models. ",
+	  "Now study the scatterplots to evaluate how well the selected subset represents the range of temperature and precipitation changes in the full CMIP5 ensemble.<br><br>",
+          "Step 3) You can change the subset of models in the <i>'Model Selection'</i> menu ",
+	  "or by clicking the corresponding points in the scatterplots (doesn't work on mobile phones).",
+	  "Our suggested approach if you are picking a subset of models is to exclude climate models that represent the climate of the past very poorly, ",
+	  "and try to find a subset out of the well performing models that preserves the statistical characteristics ",
+	  "(e.g., spread and mean) of climate change of the full ensemble.")
   })
   
   output$DisclaimerText <- renderText({
@@ -520,11 +519,11 @@ shinyServer(function(input, output, session) {
   })
   
   # When clicking 'random' button, select random GCMs
-  observeEvent(input$first, {
-    i <- 1:input$ngcm
-    updateCheckboxGroupInput(session, inputId = "gcms", choices = input$baseensemble, 
-                             selected = input$baseensemble[i])
-  })
+  #observeEvent(input$first, {
+  #  i <- 1:input$ngcm
+  #  updateCheckboxGroupInput(session, inputId = "gcms", choices = input$baseensemble, 
+  #                           selected = input$baseensemble[i])
+  #})
   
   # Reset plotly clicks when changing GCM selection (gcms)  
   observeEvent(input$gcms,{

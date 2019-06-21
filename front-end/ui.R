@@ -7,40 +7,6 @@ dashboardPage(
   ),
   dashboardSidebar(
     sidebarMenu(width="120px",
-                menuItem("Model selection", tabName = "selection", icon=NULL, 
-                         collapsed=FALSE,
-                         width='210px',
-                         numericInput(
-                           "ngcm",
-                           label = "Ensemble size",
-                           value = 10, min = 1,
-                           max = length(gcmnames),
-                           width = '150px'
-                         ),
-                         actionButton(
-                           "randomize", 
-                           label = "Random", 
-                           width = '150px'
-                         ),
-                         actionButton(
-                           "best", 
-                           label = "Best", 
-                           width = '150px'
-                         ),
-                         actionButton(
-                           "first", 
-                           label = "First", 
-                           width = '150px'
-                         ),
-                         checkboxGroupInput(
-                           "gcms",
-                           label = "Climate models",
-                           choices = gcmnames,
-                           selected = gcmnames[1:10],
-                           inline=TRUE,
-                           width='100%'
-                         )
-                ),
       menuItem("Settings for skill evaluation", tabName="rank", icon=NULL,
                menuItem("Focus regions", tabName="regionwm", icon=NULL,
                   selectInput(
@@ -232,6 +198,34 @@ dashboardPage(
                           step = 0.2,
                           value = c(-1.2,1.2))
       ),
+      menuItem("Model selection", tabName = "selection", icon=NULL, collapsed=FALSE, width='210px',
+              numericInput("ngcm",
+                           label = "Ensemble size",
+                           value = 10, min = 1,
+                           max = length(gcmnames),
+                           width = '150px'
+                         ),
+              actionButton("randomize", 
+                           label = "Random", 
+                           width = '150px'
+                         ),
+              actionButton("best", 
+                           label = "Best", 
+                           width = '150px'
+                         ),
+                         #actionButton(
+                         #  "first", 
+                         #  label = "First", 
+                         #  width = '150px'
+                         #),
+              checkboxGroupInput("gcms",
+                           label = "Climate models",
+                           choices = gcmnames,
+                           selected = gcmnames[1:10],
+                           inline=TRUE,
+                           width='100%'
+                         )
+      ),
       menuItem("Advanced settings", tabName="advanced", icon=icon("cog"),
                selectInput(
                  "tasref", 
@@ -264,14 +258,29 @@ dashboardPage(
     fluidRow(
       column(
         12,
-        box(label="info",
-            title="How to use GCMeval",
-            collapsible = TRUE,
-            collapsed = FALSE,
-            width="100%",
-            htmlOutput("IntroText"),
-            br(),
-            htmlOutput("DisclaimerText")
+        box(
+          title = HTML("<font size=+1.5 color='black'><b>Information</b></font>"),
+          width = '100%' ,
+          status = 'primary',
+          collapsible = TRUE,
+          collapsed = TRUE,
+       	  h4("How do I use the GCMeval tool?"),
+       	  htmlOutput("IntroText"),
+	  h4("Data"),
+          HTML("Global Climate Model (GCM) data:<br>"),
+       	  a("Coupled Model Intercomparison Project Phase 5 (CMIP5)",
+       	    href = "https://esgf-node.llnl.gov/projects/cmip5/"),
+       	  HTML("<br><br>Reference data:<br>"),
+       	  a("ERA5", href = "https://www.ecmwf.int/en/forecasts/datasets/reanalysis-datasets/era5"),
+       	   "(temperature and precipitation)", br(),
+       	  a("ERAinterim", href = "https://www.ecmwf.int/en/forecasts/datasets/reanalysis-datasets/era5"),
+       	  "(temperature and precipitation)", br(),
+       	  a("GPCP v2.3", href = "https://www.esrl.noaa.gov/psd/data/gridded/data.gpcp.html"),
+       	  "(precipitation)",
+	  h4("Source code"),
+          HTML("The source code for this app is available at GitHub: "),
+          a("http://github.com/metno/DECM/.", href = "https://github.com/metno/DECM/")	  
+       	  )
         )
       ),
       column(
@@ -352,33 +361,6 @@ dashboardPage(
               plotlyOutput("dtdpr2", width = '100%', height = 550),
               br()
             )
-        )
-      ),
-      column(
-        12,
-        box(
-          title = HTML('<font size=+1.5 color=black>Information</font>'),
-          width = '100%' ,
-          status = 'primary',
-          collapsible = TRUE,
-          collapsed = TRUE,
-          h4("Source code"),
-          "The source code for this app is available at GitHub ",
-          a("(http://github.com/metno/DECM/).",
-            href = "https://github.com/metno/DECM/"),
-          "This code is partially based on the R-package 'esd' which is also freely available",
-          a("(http://github.com/metno/esd/).", href =
-              "https://github.com/metno/esd"),
-          h4("Method")#,
-          #helpText(HTML(
-          #  paste(
-          #    "The combined model performance index (CMPI) summarizes the ",
-          #    "root mean square differences for multiple variables (following ",
-          #    "Gleckler et al. 2008: Performance metrics for climate models, ",
-          #    "J. Geophys. Res., 113, D06104, doi:10.1029/2007JD008972). ",
-          #    "Here, it is normalised with respect to the median rmse within the full ensemble."
-          #  )))
-          )
         )
       )
     )
