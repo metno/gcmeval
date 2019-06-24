@@ -448,7 +448,6 @@ shinyServer(function(input, output, session) {
                                 "Present day (1981-2010) to ",tolower(input$period),", ",input$rcp)),
                                 showarrow=FALSE, font=list(size=13,color = 'grey'),
 				align="left"))
-    #if(input$download1) orca(p, "test.png")
 
   })
   
