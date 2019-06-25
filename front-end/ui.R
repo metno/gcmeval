@@ -19,7 +19,7 @@ dashboardPage(
                     "wmreg1",
                     label = NULL,
                     choices = c(
-                      "Not important (0)" = 0,
+                      "Not considered (0)" = 0,
                       "Important (1)" = 1,
                       "Very important (2)" = 2
                     ),
@@ -38,7 +38,7 @@ dashboardPage(
                     "wmreg2",
                     label = NULL,
                     choices = c(
-                      "Not important (0)" = 0,
+                      "Not considered (0)" = 0,
                       "Important (1)" = 1,
                       "Very important (2)" = 2
                     ),
@@ -53,7 +53,7 @@ dashboardPage(
                    "wmdt",
                    label = "Temperature",
                    choices = c(
-                     "Not important (0)" = 0,
+                     "Not considered (0)" = 0,
                      "Important (1)" = 1,
                      "Very important (2)" = 2
                    ),
@@ -63,7 +63,7 @@ dashboardPage(
                    "wmdp",
                    label = "Precipitation",
                    choices = c(
-                     "Not important (0)" = 0,
+                     "Not considered (0)" = 0,
                      "Important (1)" = 1,
                      "Very important (2)" = 2
                    ),
@@ -75,7 +75,7 @@ dashboardPage(
                   "wmann",
                   label = "Annual",
                   choices = c(
-                    "Not important (0)" = 0,
+                    "Not considered (0)" = 0,
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
@@ -85,7 +85,7 @@ dashboardPage(
                   "wmdjf",
                   label = "Winter",
                   choices = c(
-                    "Not important (0)" = 0,
+                    "Not considered (0)" = 0,
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
@@ -95,7 +95,7 @@ dashboardPage(
                   "wmmam",
                   label = "Spring",
                   choices = c(
-                    "Not important (0)" = 0,
+                    "Not considered (0)" = 0,
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
@@ -105,7 +105,7 @@ dashboardPage(
                   "wmjja",
                   label = "Summer",
                   choices = c(
-                    "Not important (0)" = 0,
+                    "Not considered (0)" = 0,
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
@@ -115,7 +115,7 @@ dashboardPage(
                   "wmson",
                   label = "Autumn",
                   choices = c(
-                    "Not important (0)" = 0,
+                    "Not considered (0)" = 0,
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
@@ -127,7 +127,7 @@ dashboardPage(
                   "wmbias",
                   label = "Bias",
                   choices = c(
-                    "Not important (0)" = 0,
+                    "Not considered (0)" = 0,
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
@@ -137,7 +137,7 @@ dashboardPage(
                   "wmsc",
                   label = "Spatial correlation",
                   choices = c(
-                    "Not important (0)" = 0,
+                    "Not considered (0)" = 0,
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
@@ -147,7 +147,7 @@ dashboardPage(
                   "wmsd",
                   label = "Spatial sd ratio",
                   choices = c(
-                    "Not important (0)" = 0,
+                    "Not considered (0)" = 0,
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
@@ -157,7 +157,7 @@ dashboardPage(
                   "wmrmse",
                   label = HTML("RMSE of annual cycle"),
                   choices = c(
-                    "Not important (0)" = 0,
+                    "Not considered (0)" = 0,
                     "Important (1)" = 1,
                     "Very important (2)" = 2
                   ),
@@ -345,8 +345,10 @@ dashboardPage(
               collapsed = FALSE,
               br(),
               plotlyOutput("dtdpr1", width = '100%', height = 550),
-              br()
-            ),
+              br()#,
+              #actionButton("download1", label = "Download figure", width = '150px'),
+              #br()
+          ),
             box(
               label="spread2",
               title = HTML("<font size=+0>Scatterplot for secondary focus region</font>"),
@@ -354,12 +356,11 @@ dashboardPage(
               width = '100%',
               collapsible = TRUE,
               collapsed = FALSE,
-              #checkboxInput("show.ranking", 
-              #              label=HTML("<font size=-1<i>Show model ranking as color scale</i></font>"), 
-              #              value=FALSE),
               br(),
               plotlyOutput("dtdpr2", width = '100%', height = 550),
-              br()
+              br()#,
+              #actionButton("download2", label = "Download figure", width = '150px'),
+              #br()
             )
         )
       )

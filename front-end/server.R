@@ -399,8 +399,23 @@ shinyServer(function(input, output, session) {
     return(x)
   })
   
+  myPlotlyGraph <- reactive({
+    ggplotly(qplot(1:10))
+  })
+  
+  observeEvent(input$download1, {
+    filename <- paste("gcmeval",gsub("[::punct::]","",gsub(".*\\[|\\].*","",input$regionwm1)),
+                      clean(input$season),clean(input$rcp),
+                      gsub("[0-9]","",clean(input$period)),"png",sep=".")
+    orca(dtdpr1(), file=filename, scale=3, width=900, height=750)
+  })
+  
   # Region 1
   output$dtdpr1 <- renderPlotly({
+    dtdpr1()
+  })
+  
+  dtdpr1 <- reactive({
     p <- plot_ly(data.frame(x=dtas1(),y=dpr1()), x=~x, y=~y, type="scatter", mode="markers",
             marker=list(color=clr(), size=sz(), line=list(color=clr.line(), width=1.2)),
             text=paste(input$baseensemble,"\nWeighted rank:",weightedrank_all()), source="A",
@@ -418,15 +433,26 @@ shinyServer(function(input, output, session) {
            showlegend=TRUE, 
            legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=4),
 	   annotations = list(yref="paper", xref="paper", y=1.07, x=0.02,
-                                text=paste(paste0(input$season," climate change in ",input$regionwm1,"\n",
-                                "Present day (1981-2010) to ",tolower(input$period),", ",input$rcp)),
+                                text=paste(paste0(input$season," climate change in ",input$regionwm1," for ",input$rcp,
+                                "\nPresent day (1981-2010) to ",tolower(input$period))),
                                 showarrow=FALSE, font=list(size=13,color = 'grey'),
 				align="left"))
   })
   
-  # Region 2
+  observeEvent(input$download2, {
+    filename <- paste("gcmeval",gsub("[::punct::]","",gsub(".*\\[|\\].*","",input$regionwm2)),
+                      clean(input$season),clean(input$rcp),
+                      gsub("[0-9]","",clean(input$period)),"png",sep=".")
+    orca(dtdpr2(), file=filename, scale=3, width=900, height=750)
+  })
+  
+  # Region 1
   output$dtdpr2 <- renderPlotly({
-
+    dtdpr2()
+  })
+  
+  # Region 2
+  dtdpr2 <- reactive({
     p <- plot_ly(data.frame(x=dtas2(),y=dpr2()), x=~x, y=~y, type="scatter", mode="markers",
                  marker=list(color=clr(), size=sz(), line=list(color=clr.line(), width=1.2)),
                  text=paste(input$baseensemble,"\nWeighted rank:",weightedrank_all()), source="A",
@@ -444,8 +470,8 @@ shinyServer(function(input, output, session) {
              showlegend=TRUE, 
              legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=4),
 	     annotations = list(yref="paper", xref="paper", y=1.07, x=0.02,
-                                text=paste(paste0(input$season," climate change in ",input$regionwm2,"\n",
-                                "Present day (1981-2010) to ",tolower(input$period),", ",input$rcp)),
+                                text=paste(paste0(input$season," climate change in ",input$regionwm2," for ",input$rcp,
+                                "\nPresent day (1981-2010) to ",tolower(input$period))),
                                 showarrow=FALSE, font=list(size=13,color = 'grey'),
 				align="left"))
 
