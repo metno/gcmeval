@@ -15,7 +15,7 @@ metaextract.cmip6 <- function(x=NULL, experiment="ssp585", verbose=FALSE) {
     experiment <- NA; #experiment_id <- NA; 
     frequency <- NA; creation_date <- NA; tracking_id <- NA
     gcm <- NA; gcm.v <- NA; gcm.realm <- NA
-    gcm.ripf <- NA; realization <- NA; initialization_method <- NA; physics_version <- NA
+    gcm.ripf <- NA; realization_index <- NA; initialization_index <- NA; physics_index <- NA; forcing_index <- NA;
     qf <- NULL
     if(!is.null(xx$dim)) dim <- paste(names(xx$dim),collapse=",")
     if(!is.null(names(xx$var))) {
@@ -34,9 +34,9 @@ metaextract.cmip6 <- function(x=NULL, experiment="ssp585", verbose=FALSE) {
       if(!is.null(xx$dim$lon$units)) lon.unit <- xx$dim$lon$units
     }
     for(mi in c("url","filename","dates","frequency",
-                "project_id","experiment","experiment_id",
+                "mip_era","experiment","experiment_id",
                 "creation_date","tracking_id",
-                "realization","initialization_method","physics_version","forcing")) {
+                "realization_index","initialization_index","physics_index","forcing_index")) {
       if(!is.null(xx[[mi]])) {
         eval(parse(text=paste(mi," <- xx$",mi,sep="")))
       } else if (!is.null(xx$model[[mi]])) {
@@ -75,14 +75,16 @@ metaextract.cmip6 <- function(x=NULL, experiment="ssp585", verbose=FALSE) {
 
     ## Check and correct ripf - some simulations have the wrong ripf attached.
     if (is.na(gcm.ripf)) qf <- c(qf,"Missing experiment_ripf in netCDF header.")
-    gcm.ripf2 <- paste("r", realization,
-                      "i", initialization_method,
-                      "p", physics_version, sep="")
+    gcm.ripf2 <- paste("r", realization_index,
+                      "i", initialization_index,
+                      "p", physics_index,
+                      "f", forcing_index,
+                      sep="")
     if(grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}f[0-9]{1,2}",gcm.ripf2)) {
       if (is.na(gcm.ripf) | gcm.ripf!=gcm.ripf2) {
         gcm.ripf <- gcm.ripf2
         qf <- c(qf,paste("Discrepancy in experiment_ripf in netCDF header.",
-                         "Replaced experiment_ripf with realization, intitialization_method, physics_version."))
+                         "Replaced experiment_ripf with realization_index, intitialization_index, physics_index, forcing_index."))
       }
     }
     
