@@ -9,7 +9,7 @@ metaextract.cmip6 <- function(x=NULL, experiment="ssp585", verbose=FALSE) {
   
   for (i in 1:n) {
     xx <- x[[gcms[i]]]
-    project_id <- NA; url <- NA; filename <- NA; dim <- NA; dates <- NA
+    mip_era <- NA; url <- NA; filename <- NA; dim <- NA; dates <- NA
     var <- NA; longname <- NA; vunit <- NA; vid <- NA
     res <- NA; lon.rng <- NA; lon.unit <- NA; lat.rng <- NA; lat.unit <- NA
     experiment <- NA; #experiment_id <- NA; 
@@ -52,7 +52,7 @@ metaextract.cmip6 <- function(x=NULL, experiment="ssp585", verbose=FALSE) {
     
     ## If file is missing information in netCDF header,
     ## use the model history to obtain it. 
-    if(is.null(xx$model$model_id) & xx$project_id=="CMIP6") {
+    if(is.null(xx$model$model_id) & xx$mip_era=="CMIP6") {
       h <- xx$model$history
       creation_date <- substr(h, 1, regexpr("[0-9]{4}",h)+3)
       h <- strsplit(h," ")
@@ -99,7 +99,7 @@ metaextract.cmip6 <- function(x=NULL, experiment="ssp585", verbose=FALSE) {
       }
     }
     if(!is.na(filename)) filename <- gsub(".*/","",filename)
-    mx <- data.frame(project_id=project_id, url=url, filename=filename,
+    mx <- data.frame(mip_era=mip_era, url=url, filename=filename,
                      dim=paste(dim,collapse=","), dates=dates, var=paste(var,collapse=","),
                      longname=paste(longname,collapse=","), unit=paste(vunit,collapse=","),
                      resolution=res, lon=lon.rng, lon_unit=lon.unit, 
