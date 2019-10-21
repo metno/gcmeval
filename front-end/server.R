@@ -407,7 +407,7 @@ shinyServer(function(input, output, session) {
     filename <- paste("gcmeval",gsub("[::punct::]","",gsub(".*\\[|\\].*","",input$regionwm1)),
                       clean(input$season),clean(input$rcp),
                       gsub("[0-9]","",clean(input$period)),"png",sep=".")
-    orca(dtdpr1(), file=filename, scale=3, width=900, height=750)
+    orca(dtdpr1(), file=filename, scale=3, width=1000, height=700)
   })
   
   # Region 1
@@ -443,7 +443,7 @@ shinyServer(function(input, output, session) {
     filename <- paste("gcmeval",gsub("[::punct::]","",gsub(".*\\[|\\].*","",input$regionwm2)),
                       clean(input$season),clean(input$rcp),
                       gsub("[0-9]","",clean(input$period)),"png",sep=".")
-    orca(dtdpr2(), file=filename, scale=3, width=900, height=750)
+    orca(dtdpr2(), file=filename, scale=3, width=1000, height=700)
   })
   
   # Region 1
