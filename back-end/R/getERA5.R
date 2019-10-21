@@ -1,5 +1,5 @@
 ## R-script that downloads data from the Copernicus Climate Data Store (CDS)
-# You have to install python and download CDS API:
+# You have to install python and install the CDS API key and client:
 # https://cds.climate.copernicus.eu/api-how-to
 
 getERA5 <- function(variable,start=1979,end=2018,griddes="cmip_1.25deg_to_2.5deg.txt",
@@ -29,6 +29,11 @@ getERA5 <- function(variable,start=1979,end=2018,griddes="cmip_1.25deg_to_2.5deg
       if(verbose) print("NetCDF file does not exist. Download with cdsapi Python tool.")
       python.getEra5(start, end, varID, type, stream, destfile, 
                      python=python, verbose=verbose)
+      if(!file.exists(destfile)) {
+        print(paste("Warning! File",destfile,"failed to download. Mak sure that you have installed the CDS API key and client.",
+	            "See https://cds.climate.copernicus.eu/api-how-to for further instructions."))
+        return()
+      }
     }
     if(verbose) print("Regrid with CDO and save as netCDF.")
     cdo.command(cmd,input,destfile,outfile)
@@ -40,13 +45,9 @@ getERA5 <- function(variable,start=1979,end=2018,griddes="cmip_1.25deg_to_2.5deg
   if(verbose) print("Get information about the model and netCDF file.")
   ncid <- ncdf4::nc_open(outfile)
   model <- ncdf4::ncatt_get(ncid,0)
-  ncid2 <- esd::check.ncdf4(ncid,param=names(cid$var))
+  ncid2 <- check.ncdf4(ncid,param=names(cid$var))
   cid$dates <- paste(range(ncid2$time$vdate),collapse=",")
   ncdf4::nc_close(ncid)
-  #X <- esd::retrieve.ncdf4(outfile)
-  #cid$dates <- paste(range(zoo::index(X)),collapse=",")
-  #cid$area.mean <- esd::aggregate.area(X,FUN='mean')
-  #cid$area.sd <- esd::aggregate.area(X,FUN='sd')
   cid$model <- model
   cid$project_id <- cid$model$project_id
   if(verbose) print("--- end getERA5 ---")

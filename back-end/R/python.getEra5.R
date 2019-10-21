@@ -9,7 +9,7 @@ python.getEra5 <- function(start,end,varid,type,stream,outfile,
   dates <- strftime(seq(as.Date(paste0(start,"-01-01")),
                     as.Date(paste0(end,"-12-01")),by="month"),
                     format="%Y%m%d")
-  if(verbose) print("Run ECMWF Python script for downloading ERA5 data")
+  if(verbose) print("Run CDS Python script for downloading ERA5 data")
   system.command <- paste(script," -f ",start," -l ",end,
                           " -v ",varid," -t ",type," -r ",stream,
                           " -o ",outfile,sep="")

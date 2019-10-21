@@ -26,13 +26,9 @@ getCRU <- function(username,passwd,variable="tmp",version="4.00",
   cid$url <- NA
   ncid <- ncdf4::nc_open(outfile)
   model <- ncdf4::ncatt_get(ncid,0)
-  ncid2 <- esd::check.ncdf4(ncid,param=names(cid$var))
+  ncid2 <- check.ncdf4(ncid,param=names(cid$var))
   cid$dates <- paste(range(ncid2$time$vdate),collapse=",")
   ncdf4::nc_close(ncid)
-  #X <- esd::retrieve.ncdf4(outfile)
-  #cid$area.mean <- esd::aggregate.area(X,FUN='mean')
-  #cid$area.sd <- esd::aggregate.area(X,FUN='sd')
-  #cid$dates <- paste(range(zoo::index(X)),collapse=",")
   cid$model <- model
   cid$project_id <- cid$model$project_id
   invisible(cid)

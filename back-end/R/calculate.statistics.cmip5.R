@@ -97,7 +97,7 @@ calculate.statistics.cmip5 <- function(reference="eraint", period=c(1981,2010),
       cdo.command(c("-ymonmean","-selyear"),c("",paste(period,collapse="/")),
                   ref.file, ref.mon.file)
     }
-    ref <- esd::retrieve.default(ref.mon.file)
+    ref <- retrieve(ref.mon.file)
     lon <- attr(ref,"longitude")
     lat <- attr(ref,"latitude")
     weights <- calculate.mon.weights(lon,lat)
@@ -219,7 +219,7 @@ calculate.statistics.cmip5 <- function(reference="eraint", period=c(1981,2010),
         gcm.mon.file <- file.path(path,"gcm.monmean.nc")
         cdo.command(c("-ymonmean","-selyear"),c("",paste(period,collapse="/")),
                     gcm.file, gcm.mon.file)
-        gcm <- zoo::coredata(esd::retrieve.default(gcm.mon.file))
+        gcm <- zoo::coredata(retrieve(gcm.mon.file))
         dim(gcm) <- dim(ref) <- c(12,length(attr(ref,"longitude")),length(attr(ref,"latitude")))
         X[[store.name]]$global$rmse[[reference]] <- sqrt(sum(weights*(gcm-ref)^2)/sum(weights))
         file.remove(gcm.mon.file)

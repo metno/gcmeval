@@ -1,16 +1,16 @@
 Package: gcmeval
-Version: 0.1.1
+Version: 0.1.2
 Date: Feb 19 2019
 Title: gcmeval
 Author: Kajsa M. Parding <kajsa.parding@met.no>, 
         Andreas Dobler <andreas.dobler@met.no>,
+	Oskar Landgren <oskar.landgrend@met.no>,
 	Olle Raty <olle.raty@helsinki.fi>, 
         and Rasmus E. Benestad <rasmus.benestad@met.no>
 Maintainer: Kajsa Parding <kajsa.parding@met.no>
 Depends:
     R (>= 2.10.0)
 Imports:
-    esd,
     graphics,
     grDevices,
     ncdf4,

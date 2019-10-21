@@ -1,7 +1,7 @@
 cdo.regrid <- function(model.file,outfile=NULL,res.lon=2.5,res.lat=2.5,
                        remap="remapcon",bit=8,verbose=FALSE) {
   if(verbose) print("cdo.regrid")
-  X <- esd::retrieve.default(model.file)
+  X <- retrieve(model.file)
   lon <- attr(X,"longitude")
   lat <- attr(X,"longitude")
   lon.out <- seq(min(lon),max(lon),res.lon)

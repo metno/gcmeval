@@ -2,9 +2,9 @@
 #The use of this function requires that the ECMWF key and python libraries are installed on the machine.
 #See instructions in https://software.ecmwf.int/wiki/display/WEBAPI/Access+ECMWF+Public+Datasets
 #The function also requires that cdo is installed on the operating computer.
-getERA <- function(variable,start=1979,end=2017,griddes="cmip_1.25deg_to_2.5deg.txt",
+getERAint <- function(variable,start=1979,end=2017,griddes="cmip_1.25deg_to_2.5deg.txt",
                    destfile=NULL,force=FALSE,verbose=FALSE){
-  if(verbose) print("getERA")
+  if(verbose) print("getERAint")
   griddes <- find.file(griddes)[1]
   if(any(match(c("tas","tmp","temp","temperature","t2m"),variable,nomatch=0))) {
     if(verbose) print("variable: temperature")
@@ -30,7 +30,12 @@ getERA <- function(variable,start=1979,end=2017,griddes="cmip_1.25deg_to_2.5deg.
     if(verbose) print("NetCDF file with 2.5deg data does not exist.")
     if(!file.exists(destfile)) {
       if(verbose) print("GRIB file does not exist. Download with ECMWF Python tool.")
-      python.getEra(start, end, varID, steps, type, stream, destfile, verbose=verbose)
+      python.getEraint(start, end, varID, steps, type, stream, destfile, verbose=verbose)
+    }
+    if(!file.exists(destfile)) {
+      print(paste("Warning! File",destfile,"failed to download. Mak sure that you have installed the ECMWF API key and client.",
+                  "See https://software.ecmwf.int/wiki/display/WEBAPI/Access+ECMWF+Public+Datasets for further instructions."))
+      return()
     }
     if(verbose) print("Regrid with CDO and save as netCDF.")
     cdo.command(commands,input,destfile,outfile)
@@ -42,15 +47,11 @@ getERA <- function(variable,start=1979,end=2017,griddes="cmip_1.25deg_to_2.5deg.
   if(verbose) print("Get information about the model and netCDF file.")
   ncid <- ncdf4::nc_open(outfile)
   model <- ncdf4::ncatt_get(ncid,0)
-  ncid2 <- esd::check.ncdf4(ncid,param=names(cid$var))
+  ncid2 <- check.ncdf4(ncid,param=names(cid$var))
   cid$dates <- paste(range(ncid2$time$vdate),collapse=",")
   ncdf4::nc_close(ncid)
-  #X <- esd::retrieve.ncdf4(outfile)
-  #cid$area.mean <- esd::aggregate.area(X,FUN='mean')
-  #cid$area.sd <- esd::aggregate.area(X,FUN='sd')
-  #cid$dates <- paste(range(zoo::index(X)),collapse=",")
   cid$model <- model
   cid$project_id <- cid$model$project_id
-  if(verbose) print("--- end getERA ---")
+  if(verbose) print("--- end getERAint ---")
   invisible(cid)
 }

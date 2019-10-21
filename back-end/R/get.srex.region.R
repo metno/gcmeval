@@ -3,7 +3,7 @@ get.srex.region <- function(destfile,region=NULL,print.srex=FALSE,verbose=FALSE)
   if(verbose) print("get.srex.region")
   home <- system("echo $HOME",intern=TRUE)
   shape <-  get.shapefile("referenceRegions.shp")
-  X <- esd::retrieve.ncdf4(destfile,lon=NULL,lat=NULL,verbose=verbose)
+  X <- retrieve(destfile,lon=NULL,lat=NULL,verbose=verbose)
   srex <- list()
   if(is.null(region)){
     for (i in 1:length(levels(shape$LAB))){
@@ -24,8 +24,8 @@ get.srex.region <- function(destfile,region=NULL,print.srex=FALSE,verbose=FALSE)
       X.region <- mask.zoo(X,mask)
       srex[[name]]$name <- name
       srex[[name]]$label <- levels(shape$LAB)[i]
-      srex[[name]]$area.mean <- esd::aggregate.area(X.region,FUN="mean",na.rm=TRUE)
-      srex[[name]]$area.sd <- esd::aggregate.area(X.region,FUN="sd",na.rm=TRUE)
+      srex[[name]]$area.mean <- aggregateArea(X.region,FUN="mean",na.rm=TRUE)
+      srex[[name]]$area.sd <- aggregateArea(X.region,FUN="sd",na.rm=TRUE)
     }  
   } else {
     i <- which(levels(shape$LAB)==region)
@@ -44,8 +44,8 @@ get.srex.region <- function(destfile,region=NULL,print.srex=FALSE,verbose=FALSE)
     X.region <- mask.zoo(X,mask)
     srex[[name]]$name <- name
     srex[[name]]$label <- levels(shape$LAB)[i]
-    srex[[name]]$area.mean <- esd::aggregate.area(X.region,FUN="mean",na.rm=T)
-    srex[[name]]$area.sd <- esd::aggregate.area(X.region,FUN="sd",na.rm=T) 
+    srex[[name]]$area.mean <- aggregateArea(X.region,FUN="mean",na.rm=T)
+    srex[[name]]$area.sd <- aggregateArea(X.region,FUN="sd",na.rm=T) 
   }
   if(print.srex) {
     print("Region names in alphabetical order and the corresponding label to be used when selecting the region:")

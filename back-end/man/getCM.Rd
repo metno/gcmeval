@@ -27,7 +27,7 @@ getGCMs(select=1:9,varid='tas',experiment='rcp45',
   \item{lon}{longitude range to retrieve}
   \item{lat}{latitude range to retrieve}
   \item{select}{index for selecting a subset of files/models to download}
-  \item{varid}{variable name - see \code{link[esd]{retrieve}}}
+  \item{varid}{variable name - see \code{link{retrieve}}}
   \item{path}{local file path to the destination file}
   \item{experiment}{Parent experiment of the model data, either representative concentration pathway RCP4.5 ("rcp45"), RCP2.6 ("rcp26"), or RCP8.5 ("rcp85").}
   \item{force}{Logical value defaulting to FALSE. If FALSE, do not

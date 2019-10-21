@@ -1,20 +1,20 @@
 ## Script to extract metadata and calculate statistics and prepare
 ## the metadata (meta.rda) and statistics files (statistics.rda).
-## The files should then be moved to the back-end/data folder.
-
+## The files (meta.rda and statistics.rda) should then be moved back-end/data.
+##
 #!/usr/bin/env Rscript
+
+# Set path to GCM data here:
+path <- "/vol/lustre/storeA/users/kajsamp/Data/CMIP5/KNMI"
+
+## To install gcmeval package from local repository: 
+## R CMD INSTALL gcmeval/back-end
+if(!require(gcmeval) {
+  if(!require(devtools)) install.packages('devtools')
+  library(devtools)
+  install_github('metno/gcmeval/back-end')
+}
 library(gcmeval)
-
-dir <- find.file("calculate_statistics.R")
-path <- dirname(dir[grepl("gcmeval",dir)])
-setwd(path[1])
-
-# If you have already downloaded GCM data, set path here:
-#path <- "/path/to/data"
-
-## To install gcmeval package: 
-## R CMD INSTALL gcmeval/back-end 
-## Requires rgdal, raster, esd (zoo, ncdf4), RCurl
 
 get.meta <- TRUE
 get.stats <- TRUE
@@ -33,7 +33,7 @@ if(get.stats) {
       if(is.logical(getReference(ref,varid))) { 
         if(opt$verbose) print("Download reference data")
         if(ref=="eraint") {
-          getERA(variable=varid, verbose=opt$verbose)
+          getERAint(variable=varid, verbose=opt$verbose)
         } else if(ref=="era5") {
           getERA5(variable=varid, python="python", verbose=opt$verbose)
         } else if(ref=="eobs") {

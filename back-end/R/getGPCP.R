@@ -7,8 +7,6 @@ getGPCP <- function(destfile='gpcp.nc',path=NULL,
   if (file.exists(destfile) & !force) {
     ncid <- try(ncdf4::nc_open(destfile))
     if (inherits(ncid,"try-error")) force <- TRUE # If downloaded file is incomplete, force new download
-    #X <- try(esd::retrieve.default(destfile,lon=lon,lat=lat,verbose=verbose), silent=TRUE)
-    #if (inherits(X,"try-error")) force <- TRUE # If downloaded file is incomplete, force new download
   }
   if (!file.exists(destfile) | force) {
     lok <- try(download.file(url=url, destfile=destfile), silent=TRUE)
@@ -17,7 +15,6 @@ getGPCP <- function(destfile='gpcp.nc',path=NULL,
       return()
     }
     ncid <- try(ncdf4::nc_open(destfile))
-    #X <- try(esd::retrieve.default(destfile,lon=lon,lat=lat,verbose=verbose), silent=TRUE)
   }
   ## Collect information stored in the netCDF header
   cid <- getatt(destfile)
@@ -25,9 +22,8 @@ getGPCP <- function(destfile='gpcp.nc',path=NULL,
   cid$url <- url
   ## Collect information stored as model attributes
   model <- ncdf4::ncatt_get(ncid,0)
-  ncid2 <- esd::check.ncdf4(ncid,param=names(cid$var))
+  ncid2 <- check.ncdf4(ncid,param=names(cid$var))
   cid$dates <- paste(range(ncid2$time$vdate),collapse=",")
-  #cid$dates <- paste(range(zoo::index(X)),collapse=",")
   ncdf4::nc_close(ncid)
   cid$model <- model
   cid$project_id <- model$title

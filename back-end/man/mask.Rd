@@ -40,20 +40,20 @@ mask.zoo(zoo.object,mask)
 \examples{
 
 # Example file
-gcm.file <- system.file("extdata", "gcm.nc", package = "DECM")
-
-# Import SREX regions from shapefile and create mask for gcm.file
-shape <-  get.shapefile("referenceRegions.shp")
-mask <- gen.mask.srex(gcm.file, mask.polygon=shape[16,], verbose=TRUE)
-
-gcm <- zoo::coredata(esd::retrieve.ncdf4(gcm.file))
-gcm.masked <- mask.zoo(gcm, mask)
-
 \dontrun{
+
 # Download GCM data
 x <- getGCMs(select=1, varid="pr", experiment="rcp85")
 # Get SREX region for Northern Europe (NEU)
 srex <- get.srex.region(x[[1]]$filename,"NEU")
+
+# Import SREX regions from shapefile and create mask for gcm.file
+shape <-  get.shapefile("referenceRegions.shp")
+mask <- gen.mask.srex(x[[1]]$filename, mask.polygon=shape[16,], verbose=TRUE)
+
+gcm <- zoo::coredata(retrieve(x[[1]]$filename))
+gcm.masked <- mask.zoo(gcm, mask)
+
 }
 }
 \keyword{mask}
