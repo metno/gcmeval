@@ -7,7 +7,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
       i <- length(names(ncid$var))
     } else i <- 1
     param <- names(ncid$var)[i] # ; rm(i)
-    v1 <- ncid$var[[i]] 
+    v1 <- ncid$var[[i]]
   } else {
     v1 <- NULL
     i <- grep(param, names(ncid$var))
@@ -31,10 +31,8 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     stop("Checking Dimensions --> [fail]")
     if (verbose) print("The variable has no dimensions. The file may be corrupted!")  
   }
-  dimnames <- dimnames
   
   model <- ncdf4::ncatt_get(ncid,0)
- 
   mnames <- names(model)
   history <- ncdf4::ncatt_get(ncid,0,"history")
   
@@ -45,6 +43,14 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     }
   } else if (length(grep("ssp",tolower(history$value)))>0) {
     model$project_id <- "CMIP6"
+    ssp <- unlist(strsplit(substr(history$value,regexpr("ssp",history$value),
+                                  nchar(history$value)),split="_"))[1]
+    if(grep("ssp",tolower(ssp))) {
+      model$experiment <- toupper(ssp)
+      if(min(x$dates)<as.Date("2010-01-01") & !grepl("historical",ssp)) {
+        model$experiment_id <- paste("historical",ssp,sep="+")
+      }
+    }
   } else if (length(grep("rcp",tolower(history$value)))>0) {
     model$project_id <- "CMIP5"
   } else if (length(grep("sres",tolower(history$value)))>0) {
@@ -53,12 +59,13 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
     if (verbose) print("project_id is missing from file attributes")
     model$project_id <- NULL
   }
-  
+
   if (!ncdf4::ncatt_get(ncid,0,"model_id")$hasatt &
       (ncdf4::ncatt_get(ncid,0,"project_id")$hasatt |
        !is.null(model$project_id))) {   
     hist2 <- unlist(strsplit(history$value,split=c(" ")))
-    ih <- grep("tas",hist2)
+    #ih <- grep("tas",hist2)
+    ih <- grep(paste0(param,".*.nc"),hist2)
     if (model$project_id=="CMIP3") {
       txt <- hist2[ih[1]] 
       model$model_id <- cmip3.model_id(txt)
@@ -66,9 +73,8 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
       txt <- hist2[ih[2]]
       model$model_id <- cmip5.model_id(txt)
     } else if (model$project_id=="CMIP6") {
-      browser()
       txt <- hist2[ih[2]]
-      model$model_id <- cmip6.model_id(txt)      
+      model$model_id <- cmip6.model_id(txt)
     }
   }
 
@@ -96,7 +102,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
         is.null(model$experiment_id)) {
       model$experiment_id <- modelid[grep('rcp',tolower(modelid))]
     }
-    ## model$experiment_id <-modelid[2:3]
+    
     if (length(grep('ssp',tolower(modelid))>0) &
       is.null(model$experiment_id)) {
       model$experiment_id <- modelid[grep('ssp',tolower(modelid))]
@@ -307,19 +313,6 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
           } else if(freq.data %in% c('season','year')) {
             time$vdate <- as.Date(paste(years,months,"01",sep="-"))
 	  }
-          #} else {
-          #  if(median(diff(days))<=1 & !requireNamespace("PCICt",quietly=TRUE)) {
-          #    stop("Package \"PCICt\" needed to retrieve subdaily 360-day calendar data. Please install it.")
-          #  }
-          #  if(median(diff(days))<1) {
-          #    hours <- (days-floor(days))*24
-          #    days <- floor(days)
-          #    time$vdate <- PCICt::as.PCICt(paste(years,months,days,hours,sep=":"),format="%Y:%m:%d:%H",
-          #                                  cal=time$daysayear)
-          #  } else if(median(diff(days))==1) {
-          #    time$vdate <- PCICt::as.PCICt(paste(years,months,floor(days),sep="-"),cal=time$daysayear)
-          #  }
-          #}
         }
       }
     }
