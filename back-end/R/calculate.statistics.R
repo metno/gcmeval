@@ -152,6 +152,7 @@ calculate.statistics <- function(files.in, meta=NULL, file.out="statistics.rda",
       }
       if(!is.null(S.gcm)) statistics[[var.f]][[exp.f]][[label.period]][[gcm.f]] <- S.gcm
       if(!is.null(S.ref)) statistics[[var.f]][[ref]][[label.period]] <- S.ref
+      if(!is.null(file.out)) save(statistics, file=file.out)
     }
   }
   
@@ -186,8 +187,8 @@ calculate.statistics <- function(files.in, meta=NULL, file.out="statistics.rda",
           }
         }
       }
-    } 
+    }
+    if(!is.null(file.out)) save(statistics, file=file.out)
   }
-  if(!is.null(file.out)) save(statistics, file=file.out)
   invisible(statistics)
 }
