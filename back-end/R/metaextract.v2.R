@@ -1,5 +1,5 @@
 ## Function to extract the metadata from local NetCDF files
-metaextract.v2 <- function(file.in,file.out="meta.rda",path.in=NULL,path.out=NULL,
+metaextract.v2 <- function(files.in,file.out="meta.rda",path.in=NULL,path.out=NULL,
                            add=TRUE,force=FALSE,verbose=FALSE) {
   if(verbose) print("metaextract.v2")
   if(!is.null(path.out)) file.out <- file.path(path.out,file.out)
@@ -11,8 +11,8 @@ metaextract.v2 <- function(file.in,file.out="meta.rda",path.in=NULL,path.out=NUL
     if(verbose) print(paste("Creating new metadata file",file.out))
     Y <- NULL
   }
-  if(!is.null(Y) & !force) file.in <- file.in[!basename(file.in) %in% Y[,colnames(Y)=="filename"]]
-  for(f in file.in) {
+  if(!is.null(Y) & !force) files.in <- files.in[!basename(files.in) %in% Y[,colnames(Y)=="filename"]]
+  for(f in files.in) {
     if(verbose) print(paste("Extracting metadata from file",f))
     if(inherits(f,"character") & grep(".nc",f)) {
       if(!is.null(path.in)) f <- file.path(path.in,f)
