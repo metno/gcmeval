@@ -4,103 +4,120 @@
 ##
 #!/usr/bin/env Rscript
 
-## To install gcmeval package from local repository: 
-## R CMD INSTALL gcmeval/back-end
+## Install gcmeval from github:
 if(!require(gcmeval)) {
   if(!require(devtools)) install.packages('devtools')
   library(devtools)
   install_github('metno/gcmeval/back-end')
 }
 library(gcmeval)
+source("~/git/gcmeval/back-end/R/calculate.statistics.cmip.R")
+source("~/git/gcmeval/back-end/R/calculate.statistics.R")
+## To install gcmeval package from local repository: 
+## R CMD INSTALL gcmeval/back-end
 
-# Set path to reference data here:
+## Set paths...
+##...to reference data:
 path.ref <- "/vol/lustre/storeA/users/kajsamp/Data/GCMEval"
-setwd(path.ref)
-
-# Set path to metadata and statistics files
-path.meta <- "/home/kajsamp/git/gcmeval/R-scripts"
-path.stats <- "/home/kajsamp/git/gcmeval/R-scripts"
-  
-# Set path to GCM data here:
+##...to GCM data:
 path.cmip5 <- "/vol/lustre/storeA/users/kajsamp/Data/CMIP5/KNMI"
 path.cmip6 <- "/vol/lustre/storeA/users/oskaral/data/CMIP6/cat"
+##...to the metadata and statistics files:
+path.out <- "~/git/gcmeval/R-scripts"
 
-# Set options - calculate meta data and statistics
-get.meta <- TRUE
-get.stats <- TRUE
-add <- FALSE # create new files rather than adding to old ones
+## Set options for calculations:
+calculate_meta <- FALSE
+calculate_stats <- TRUE
+download_ref <- FALSE
+download_cmip5 <- FALSE
+ref.tas <- c("era5","eraint")
+ref.pr <- c("era5","eraint","gpcp")
+verbose <- TRUE
 
-# Alternatives for ref: tas: eraint, era5; pr: eraint, era5, gpcp
-opt <- list(ref.tas=c("era5","eraint"), ref.pr=c("era5","eraint","gpcp"),
-            verbose=TRUE, it.ref=c(1981,2010), nfiles="all",
-	          add=add, force=FALSE, mask="coords.txt", path=path.ref)
+## DOWNLOAD AND PREPARE DATA
+## The CMIP5 ensemble can be downloaded from the KNMI climate explorer using the getCMIP5 function.
+if(download_cmip5) {
+  path.cmip5 <- "/home/kajsamp/Documents/Data/CMIP5"
+  getCMIP5(select=1:110, varid="tas", experiment="rcp45", path=path.cmip5)
+  getCMIP5(select=1:110, varid="tas", experiment="rcp85", path=path.cmip5)
+  getCMIP5(select=1:110, varid="pr", experiment="rcp45", path=path.cmip5)
+  getCMIP5(select=1:110, varid="pr", experiment="rcp85", path=path.cmip5)
+} 
+## The CMIP6 ensemble and other data that are not available from the climate explorer
+## can be downloaded from the climate data store (https://cds.climate.copernicus.eu/api-how-to).
+## If the data comes in several files for different time slices, the files should be 
+## concatenated before applying the functions 'metaextract' and 'calculate.statistics'.
 
-# Download reference data
-if(get.stats) {
+# Generate list of GCM files:
+files.cmip6 <- list.files(path=path.cmip6, pattern=".nc", full.names=TRUE)
+files.cmip5 <- list.files(path=path.cmip5, pattern=".nc", full.names=TRUE)
+files.gcm <- c(files.cmip6, files.cmip5)
+
+## REFERENCE DATA
+## If you already have the reference data you can put them in path.ref with the following filenames:
+## ERA5 tempterature: "era5_monthly_1979-2018_tas.2.5deg.nc",
+## ERA5 precipitation: "era5_monthly_1979-2018_pr.2.5deg.nc",
+## ERAinterim temperature: "era-interim_monthly_1979-2017_tas.2.5deg.nc",
+## ERAinterim temperature: "era-interim_monthly_1979-2017_pr.2.5deg.nc",
+## GPCP (precipitation): "gpcp.nc"
+## EOBS temperature: "tg_0.50deg_reg_v17.0_mon.nc",
+## EOBS precipitation: "tg_0.50deg_reg_v17.0_mon.nc",
+## If you don't already have it, download the reference data
+## with the functions getERA5, getERAint, getGPCP, getEOBS.
+## (Note that getERA5 requires installing the CDS API key and client
+## and getERAint requires installing the ECMWF API key and client)
+if(download_ref) {
   for (varid in c("tas","pr")) {
-    ref.var <- switch(varid, "tas"=opt$ref.tas, "pr"=opt$ref.pr)
+    ref.var <- switch(varid, "tas"=ref.tas, "pr"=ref.pr)
     for(ref in ref.var) {
       if(is.logical(getReference(ref,varid))) { 
-        if(opt$verbose) print("Download reference data")
+        if(verbose) print("Download reference data")
         if(ref=="eraint") {
-          getERAint(variable=varid, verbose=opt$verbose)
+          getERAint(variable=varid, verbose=verbose, path=path.ref)
         } else if(ref=="era5") {
-          getERA5(variable=varid, python="python", verbose=opt$verbose)
+          getERA5(variable=varid, python="python", verbose=verbose, path=path.ref)
         } else if(ref=="eobs") {
-          getEOBS(variable=varid, verbose=opt$verbose)
+          getEOBS(variable=varid, verbose=verbose, path=path.ref)
         } else if(ref=="gpcp") {
-          getGPCP(verbose=opt$verbose)
+          getGPCP(verbose=verbose, path=path.ref)
         }
       }
     }
   }
 }
 
-# Generate list of GCM files:
-files.cmip6 <- list.files(path=path.cmip6, pattern=".nc", full.names=TRUE)
-files.cmip5 <- list.files(path=path.cmip5, pattern=".nc", full.names=TRUE)
-files.gcm <- c(files.cmip6,files.cmip5)
-y <- metaextract.v2(file.in=files.gcm, path=NULL, add=opt$add, verbose=TRUE,
-                    file.out=file.path(path.meta,"meta.rda"))
-
-# Set add=FALSE to create new metadata file or TRUE to add metadata to old file
-#if(get.meta) {
-#  add <- opt$add
-#  for(varid in c("tas","pr")) {
-#    for(rcp in c("rcp45","rcp85")) {
-#      x <- getGCMs(select=1:110,varid=varid,experiment=rcp,
-#                   verbose=opt$verbose,path=opt$path)
-#      y <- metaextract(x,verbose=opt$verbose,add=add,file="meta.rda")
-#      add <- TRUE # change add to TRUE so metadata is added to old file
-#    }
-#  }
+## Generate metadata and store in the file meta.rda
+## add=TRUE: Add new metadata to the old metadata file. 
+## add=FALSE: Create a new metadata file.
+## force=TRUE: When running metaextract on a file that is already in the metadata, extract new metadata and replace the old entry.
+## force=FALSE: When running metaextract on a file that is already in the metadata, do not extract new metadata.
+if(calculate_meta) {
+  add <- TRUE; force <- TRUE
+  meta <- metaextract(files.gcm, file.out="meta.rda", path.out=path.out,
+                      add=add, force=force, verbose=verbose)
+} else if(file.exists(file.path(path.out, "meta.rda"))) {
+  load(file.path(path.out, "meta.rda"))
+} else {
+  meta <- NULL
 }
 
-# Calculate regional statistics for CMIP5 
-# (spatial mean, sd, corr, seasonal cycle rmse, cmpi)
-if(get.stats) {
-  stats <- c("mean","spatial.sd","corr","rmse")
-  for (varid in c("pr","tas")) {
-    print(paste("Calculate annual cycle statistics of",varid))
-    for(rcp in c("rcp85","rcp45")) {
-      for (it in list(opt$it.ref,c(2071,2100),c(2021,2050))) {
-        print(paste("period:",paste(it,collapse="-"),
-                    "; scenario:",rcp))
-        if(all(it==opt$it.ref)) {
-          ref.var <- switch(varid, "tas"=opt$ref.tas, "pr"=opt$ref.pr)
-          for(ref in ref.var) {
-            calculate.statistics.cmip5(reference=ref, period=it,
-                                       variable=varid, path.gcm=opt$path, nfiles=opt$nfiles,
-                                       add=opt$add, mask=opt$mask, experiment=rcp,
-                                       verbose=opt$verbose, force=opt$force, stats=stats)
-          }
-        } else {
-          calculate.statistics.cmip5(reference=NULL, period=it,
-	          variable=varid, path.gcm=opt$path, nfiles=opt$nfiles,
-	          add=opt$add, mask=opt$mask, experiment=rcp,
-	          verbose=opt$verbose, force=opt$force, stats=stats)
-     	  }
-      }
-    }
-  }
+## Calculate statistics for future periods
+force <- FALSE
+add <- FALSE
+for(it in list(c(2071,2100),c(2021,2050))) {
+  stats <- c("mean.gcm","spatial.sd.gcm")
+  x <- calculate.statistics(files.gcm, meta=meta, file.out="statistics.rda", path.out=path.out,
+                            ref=NULL, period=it, stats=stats, add=add, force=force, verbose=verbose)
+  add <- TRUE
 }
+
+## Calculate statistics for the past
+stats <- c("mean.gcm","spatial.sd.gcm","mean.ref","spatial.sd.ref","corr","rmse","cmpi")
+for(ref in unique(c(ref.tas,ref.pr))) {
+  x <- calculate.statistics(files.gcm, meta=meta, file.out="statistics.rda", path.out=path.out,
+                            ref=ref, path.ref=path.ref, period=c(1981,2010), 
+                            stats=stats, add=add, force=force, verbose=verbose)
+  add <- TRUE
+  stats <- c("mean.ref","spatial.sd.ref","corr","rmse","cmpi")
+}
+
