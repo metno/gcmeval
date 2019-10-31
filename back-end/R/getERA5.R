@@ -3,7 +3,7 @@
 # https://cds.climate.copernicus.eu/api-how-to
 
 getERA5 <- function(variable,start=1979,end=2018,griddes="cmip_1.25deg_to_2.5deg.txt",
-                   destfile=NULL,force=FALSE,python="python",verbose=FALSE){
+                   destfile=NULL,path=NULL,force=FALSE,python="python",verbose=FALSE){
   if(verbose) print("getERA5")
   griddes <- find.file(griddes)[1]
   if(any(match(c("tas","tmp","temp","temperature","t2m"),variable,nomatch=0))) {
@@ -22,16 +22,19 @@ getERA5 <- function(variable,start=1979,end=2018,griddes="cmip_1.25deg_to_2.5deg
     input <- c("tp,pr",griddes)
   }
   if(is.null(destfile)) destfile <- paste0("era5_monthly_",paste(start,end,sep="-"),"_",variable,".nc")
-  outfile <- gsub('.nc$', '.2.5deg.nc',destfile)
+  outfile <- gsub('.nc$','.2.5deg.nc',destfile)
+  if(!is.null(path)) outfile <- file.path(path,outfile) 
   if(!file.exists(outfile)|force) {
     if(verbose) print("NetCDF file with 2.5deg data does not exist.")
+    if(!is.null(path)) destfile <- file.path(path,destfile)
     if(!file.exists(destfile)) {
       if(verbose) print("NetCDF file does not exist. Download with cdsapi Python tool.")
       python.getEra5(start, end, varID, type, stream, destfile, 
                      python=python, verbose=verbose)
       if(!file.exists(destfile)) {
-        print(paste("Warning! File",destfile,"failed to download. Mak sure that you have installed the CDS API key and client.",
-	            "See https://cds.climate.copernicus.eu/api-how-to for further instructions."))
+        warning(paste("Warning! File",destfile,"failed to download.",
+                    "Make sure that you have installed the CDS API key and client.",
+	                   "See https://cds.climate.copernicus.eu/api-how-to for further instructions."))
         return()
       }
     }

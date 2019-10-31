@@ -41,19 +41,24 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
       model$project_id <- "CMIP3"
       if (verbose) print("project_id IPCC Fourth Assessment set to CMIP3")
     }
-  } else if (length(grep("ssp",tolower(history$value)))>0) {
+  } else if (length(grep("cmip6|ssp",tolower(history$value)))>0) {
     model$project_id <- "CMIP6"
-    ssp <- unlist(strsplit(substr(history$value,regexpr("ssp",history$value),
-                                  nchar(history$value)),split="_"))[1]
-    if(grep("ssp",tolower(ssp))) {
+    if(grepl("ssp",history$value)) {
+      ssp <- unlist(strsplit(substr(history$value,regexpr("ssp",history$value),
+                                    nchar(history$value)),split="_"))[1]
       model$experiment <- toupper(ssp)
-      if(min(x$dates)<as.Date("2010-01-01") & !grepl("historical",ssp)) {
-        model$experiment_id <- paste("historical",ssp,sep="+")
+      if(grepl("historical",history$value)) {
+        model$experiment_id <- paste("historical",tolower(ssp),sep="+")
+      } else {
+        model$experiment_id <- toupper(ssp)
       }
+    } else if(grepl("historical",history$value)) {
+      model$experiment <- "historical"
+      model$experiment_id <- "historical"
     }
-  } else if (length(grep("rcp",tolower(history$value)))>0) {
+  } else if (length(grep("rcp|cmip5",tolower(history$value)))>0) {
     model$project_id <- "CMIP5"
-  } else if (length(grep("sres",tolower(history$value)))>0) {
+  } else if (length(grep("sres|cmip3",tolower(history$value)))>0) {
     model$project_id <- "CMIP3"
   } else {
     if (verbose) print("project_id is missing from file attributes")

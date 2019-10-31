@@ -3,7 +3,7 @@
 #See instructions in https://software.ecmwf.int/wiki/display/WEBAPI/Access+ECMWF+Public+Datasets
 #The function also requires that cdo is installed on the operating computer.
 getERAint <- function(variable,start=1979,end=2017,griddes="cmip_1.25deg_to_2.5deg.txt",
-                   destfile=NULL,force=FALSE,verbose=FALSE){
+                   destfile=NULL,path=NULL,force=FALSE,verbose=FALSE){
   if(verbose) print("getERAint")
   griddes <- find.file(griddes)[1]
   if(any(match(c("tas","tmp","temp","temperature","t2m"),variable,nomatch=0))) {
@@ -26,14 +26,16 @@ getERAint <- function(variable,start=1979,end=2017,griddes="cmip_1.25deg_to_2.5d
   }
   if(is.null(destfile)) destfile <- paste("era-interim_monthly_",paste(start,end,sep="-"),"_",variable,".grib",sep="")
   outfile <- paste(gsub('.{5}$', '',destfile),"2.5deg",'nc',sep=".")
+  if(is.null(path)) outfile <- file.path(path, outfile)
   if(!file.exists(outfile)|force) {
     if(verbose) print("NetCDF file with 2.5deg data does not exist.")
+    if(!is.null(path)) destfile <- file.path(path, destfile) 
     if(!file.exists(destfile)) {
       if(verbose) print("GRIB file does not exist. Download with ECMWF Python tool.")
       python.getEraint(start, end, varID, steps, type, stream, destfile, verbose=verbose)
     }
     if(!file.exists(destfile)) {
-      print(paste("Warning! File",destfile,"failed to download. Mak sure that you have installed the ECMWF API key and client.",
+      print(paste("Warning! File",destfile,"failed to download. Make sure that you have installed the ECMWF API key and client.",
                   "See https://software.ecmwf.int/wiki/display/WEBAPI/Access+ECMWF+Public+Datasets for further instructions."))
       return()
     }

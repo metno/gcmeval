@@ -2,9 +2,6 @@
 getCM <- function(url=NULL,destfile='CM.nc',path=NULL,
                   lon=NULL,lat=NULL,force=FALSE,verbose=FALSE) {
   if(verbose) print("getCM")
-  ## Retrieves the data
-  if(is.null(url)) url <-
-      'https://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_ACCESS1-0_historical_000.nc'
   if(!is.null(path)) destfile <- file.path(path,destfile)
   if (file.exists(destfile) & !force) {
     if(verbose) print(paste("File",destfile,"exists. Check file."))
@@ -12,31 +9,17 @@ getCM <- function(url=NULL,destfile='CM.nc',path=NULL,
     if (inherits(ncid,"try-error")) force <- TRUE # If downloaded file is incomplete, force new download
   }
   if (!file.exists(destfile) | force) {
+    if(is.null(url)) url <- 'https://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_ACCESS1-0_historical_000.nc'
     if(verbose) print(paste("Download file from",url))
     lok <- try(download.file(url=url, destfile=destfile), silent=TRUE)
     if(lok>0) {
       try(file.remove(destfile), silent=TRUE)
+      warning(paste("Failed to download file from url",url))
       return()
     }
     ncid <- ncdf4::nc_open(destfile)
   }
-  ## Collect information stored in the netCDF header
-  cid <- getatt(destfile)
-  ## Extract a time series for the area mean for 
-  cid$url <- url
-  ## Collect information stored as model attributes
-  ncid2 <- check.ncdf4(ncid,param=names(cid$var))
-  cid$dates <- paste(range(ncid2$time$vdate),collapse=",")
-  model <- ncdf4::ncatt_get(ncid,0)
-  ncdf4::nc_close(ncid)
-  cid$model <- model
-  cid$project_id <- cid$model$project_id
-  if(is.null(cid$project_id) & !is.null(cid$model$title)) {
-    if(grepl("CMIP5",model$title)) {
-      cid$project_id <- "CMIP5"
-    } else if (grepl("CMIP5",model$title)) {
-      cid$project_id <- "CMIP6"
-    }
-  }
+  cid <- getncid(destfile)
+  if(!is.null(url)) cid$url <- url
   return(cid)
 }
