@@ -1,29 +1,34 @@
 \name{getCM}
 \alias{getCM}
+\alias{getCMIP5}
 \alias{getGCMs}
 \alias{cmip5.urls}
 \alias{getatt}
+\alias{getncid}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Download GCM and RCM data
 }
-\description{\code{getCM} downloads GCM or RCM data from given a URL. \code{getGCMs} retrieves CMIP5 data from the KNMI climate data explorer, generating the URLs with \code{cmip5.urls} and \code{cordex.urls}. \code{getatt} reads and extracts the attribute information in a netCDF files and stores this in a list object.
+\description{\code{getCM} downloads GCM or RCM data from given a URL. \code{getGCMs} and \code{getCMIP5} are identical and both retrieve CMIP5 data from the KNMI climate data explorer, generating the URLs with \code{cmip5.urls} and \code{cordex.urls}. \code{getatt} reads and extracts the attribute information in a netCDF files and stores this in a list object. \code{getncid} extracts additional information from a netCDF file. 
 }
 \usage{
 getCM(url=NULL,destfile='CM.nc',path=NULL,
       lon=NULL,lat=NULL,force=FALSE,verbose=FALSE)
-getatt(fname)
+getncid(filename, path=NULL, verbose=FALSE)
+getatt(filename)
 cmip5.urls(experiment='rcp45',varid='tas',
            url="http://climexp.knmi.nl/CMIP5/monthly/", 
            force=FALSE,verbose=FALSE)
 getGCMs(select=1:9,varid='tas',experiment='rcp45',
         destfile=NULL,path=NULL,force=FALSE,verbose=FALSE)
+getCMIP5(select=1:9,varid='tas',experiment='rcp45',
+         destfile=NULL,path=NULL,force=FALSE,verbose=FALSE)	
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{url}{The URL locating the data files over Internet}
   \item{destfile}{The name of the local destination file when downloading}
-  \item{fname}{The filename of a local netCDF file}
+  \item{filename}{The filename of a local netCDF file}
   \item{lon}{longitude range to retrieve}
   \item{lat}{latitude range to retrieve}
   \item{select}{index for selecting a subset of files/models to download}
@@ -49,8 +54,8 @@ x <- getCM(url='http://climexp.knmi.nl/CMIP5/monthly/tas/tas_Amon_ACCESS1-0_hist
       destfile='GCM1.nc',lon=c(-60,60),lat=c(45,80),
       force=TRUE,verbose=TRUE)
     
-fname <- x$filename
-x.info <- getatt(fname)
+filename <- x$filename
+x.info <- getatt(filename)
 
 y <- getGCMs(select=1:3)
 }

@@ -11,7 +11,7 @@ getncid <- function(filename,path=NULL,verbose=FALSE) {
   cid$model <- ncid2$model
   cid$project_id <- cid$model$project_id
   if(is.null(cid$project_id) & !is.null(cid$model$title)) {
-    if(grepl("CMIP5",model$title)) cid$project_id <- "CMIP5"
+    if(grepl("CMIP5",cid$model$title)) cid$project_id <- "CMIP5"
   }
   return(cid)
 }

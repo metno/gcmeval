@@ -1,4 +1,5 @@
 \name{cleanstr}
+\alias{cleanstr}
 \title{Remove punctuation from string}
 \description{
 Helper function to "clean" a character string by removing all punctuation and applying \code{tolower}. 

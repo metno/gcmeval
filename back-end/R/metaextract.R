@@ -1,61 +1,76 @@
 ## Function to extract the metadata from local NetCDF files
-metaextract <- function(x=NULL,add=TRUE,file="meta.rda",verbose=FALSE) {
-  if(verbose) print("metaextract")
-  if (is.null(x)) x <- getGCMs(verbose=verbose)
-  gcms <- names(x)
-  n <- length(gcms)
-  if(verbose) print(gcms)
-  for(i in seq_along(x)) {
-    xx <- x[[gcms[i]]]
-    if(is.null(xx$project_id)) {
-      print(paste("Warning! project_id is not specified in",xx$filename))
-      yi <- NULL
-    } else if(grepl("cmip",tolower(xx$project_id))) {
-      yi <- metaextract.cmip5(xx,verbose=verbose)
-    }
-    if(verbose) print(i)
-    if(i==1) {
-      Y <- matrix(NA,ncol=ncol(yi),nrow=n)
-      colnames(Y) <- colnames(yi)
-      Y[i,] <- yi
-    } else {
-      cn.all <- unique(c(colnames(Y),colnames(yi)))
-      Y.new <- matrix(NA,ncol=length(cn.all),nrow=n)
-      colnames(Y.new) <- cn.all
-      j <- sapply(colnames(Y),function(x) which(cn.all==x))
-      Y.new[1:(i-1),j] <- Y[1:(i-1),]
-      for(cn in colnames(yi)) {
-        Y.new[i,colnames(Y.new)==cn] <- yi[colnames(yi)==cn]
-      }
-      Y <- Y.new
-    }
-  }
-  Y <- as.data.frame(Y)
-  if(add & file.exists(file)) {
-    # merge old and new meta data - add and rearrange columns if necessary:
-    load(file)
-    meta.old <- meta
-    if(any(!colnames(Y)%in%colnames(meta.old))) {
-      new.cols <- colnames(Y)[!colnames(Y)%in%colnames(meta.old)] 
-      for(n in new.cols) meta.old[[n]] <- rep(NA,nrow(meta.old))
-    }
-    if(any(!colnames(meta.old)%in%colnames(Y))) {
-      new.cols <- colnames(meta.old)[!colnames(meta.old)%in%colnames(Y)] 
-      for(n in new.cols) Y[[n]] <- rep(NA,nrow(Y))
-    }
-    meta <- rbind(meta.old,Y)
-    #meta <- meta[!duplicated(meta),]
-    gcm.i <- substr(meta$url,regexpr("[0-9]{3}.nc",meta$url),
-                    nchar(as.character(meta$url))-3)
-    meta$gcm.i <- gcm.i
-    id <- paste(meta$project_id,meta$experiment,meta$var,meta$gcm.i,sep=".")
-    #id <- paste(meta$project_id,meta$experiment,meta$var,meta$gcm,meta$gcm_rip,sep=".")
-    meta <- meta[order(id),]
+metaextract <- function(files.in,file.out="meta.rda",path.in=NULL,path.out=NULL,
+                           add=TRUE,force=FALSE,verbose=FALSE) {
+  if(verbose) print("metaextract.v2")
+  if(!is.null(path.out)) file.out <- file.path(path.out,file.out)
+  if(add & file.exists(file.out)) {
+    if(verbose) print(paste("Merge new metadata with exisiting metadata from",file.out))
+    load(file.out)
+    Y <- as.matrix(meta)
   } else {
-    Y -> meta
-    meta <- meta[!duplicated(meta),]
+    if(verbose) print(paste("Creating new metadata file",file.out))
+    Y <- NULL
   }
+  if(!is.null(Y) & !force) files.in <- files.in[!basename(files.in) %in% Y[,colnames(Y)=="filename"]]
+  for(f in files.in) {
+    if(verbose) print(paste("Extracting metadata from file",f))
+    if(inherits(f,"character") & grep(".nc",f)) {
+      if(!is.null(path.in)) f <- file.path(path.in,f)
+      if(!file.exists(f)) {
+        warning(paste("Warning! File",f,"does not exist."))
+      } else {
+        x <- getncid(filename=f, verbose=verbose)
+        if(is.null(x$project_id)) {
+          warning(paste("Warning! project_id is not specified in",x$filename))
+          yi <- NULL
+        } else if(grepl("cmip",tolower(x$project_id))) {
+          yi <- metaextract.cmip(x,verbose=verbose)
+        } else {
+          warning(paste("Warning! This is not CMIP data. I don't know what to do with",x$filename))
+          yi <- NULL
+        } #else if(grepl("cordex",tolower(x$project_id))) {
+          #yi <- metaextract.cordex(x,verbose=verbose)
+        #}
+        if(is.null(Y)) {
+          Y <- yi
+        } else if(force & (yi[colnames(yi)=="filename"] %in% Y[,colnames(Y)=="filename"])) {
+          i <- which(Y[,colnames(Y)=="filename"]==yi[colnames(yi)=="filename"])
+          if(any(!colnames(yi) %in% colnames(Y))) {
+            cn.all <- unique(c(colnames(Y),colnames(yi)))
+            Y.new <- matrix(NA,ncol=length(cn.all),nrow=nrow(Y))
+            colnames(Y.new) <- cn.all
+            j <- sapply(colnames(Y), function(x) which(cn.all==x))
+            Y.new[,j] <- Y[,]
+          } else {
+            Y.new <- Y
+          }
+          for(cn in colnames(yi)) {
+            Y.new[i,colnames(Y.new)==cn] <- yi[colnames(yi)==cn]
+          }
+          Y <- Y.new
+        } else {
+          n <- nrow(Y)
+          Y.new <- Y
+          cn.all <- unique(c(colnames(Y),colnames(yi)))
+          Y.new <- matrix(NA,ncol=length(cn.all),nrow=n+1)
+          colnames(Y.new) <- cn.all
+          j <- sapply(colnames(Y),function(x) which(cn.all==x))
+          Y.new[1:n,j] <- Y[1:n,]
+          for(cn in colnames(yi)) {
+            Y.new[n+1,colnames(Y.new)==cn] <- yi[colnames(yi)==cn]
+          }
+          Y <- Y.new
+        }
+      }
+    }
+  }
+  meta <- as.data.frame(Y)
+  gcm.i <- paste(meta$project_id,gsub("-","_",meta$gcm),meta$gcm_rip,sep=".")
+  meta$gcm.i <- gcm.i
+  id <- paste(meta$project_id,gsub("[.]","",tolower(meta$experiment)),
+              meta$var,meta$gcm,meta$gcm_rip,sep=".")
+  meta <- meta[order(id),]
   meta <- meta[!duplicated(meta),]
-  save(meta,file=file)
+  save(meta,file=file.out)
   return(meta)
 }

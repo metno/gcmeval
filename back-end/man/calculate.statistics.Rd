@@ -20,9 +20,9 @@ calculate.mon.weights(lon,lat)
 }
 \arguments{
   \item{files.in}{a list of netCDF files containing GCM data}
-  \item{file.in}{a netCDF file containing GCM data}
   \item{meta}{metadata for \code{files.in}}
   \item{ref}{reference data set: "eraint", "era5","gpcp", or "eobs")}
+  \item{file.gcm}{a netCDF file containing GCM data}
   \item{file.ref}{a netCDF file containing reference data (reanalysis or gridded observations)}
   \item{period}{a subset of years to include in calculations}
   \item{path.in}{path to GCM data}

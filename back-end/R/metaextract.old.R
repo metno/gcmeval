@@ -1,0 +1,61 @@
+## Function to extract the metadata from local NetCDF files
+metaextract.old <- function(x=NULL,add=TRUE,file="meta.rda",verbose=FALSE) {
+  if(verbose) print("metaextract")
+  if (is.null(x)) x <- getGCMs(verbose=verbose)
+  gcms <- names(x)
+  n <- length(gcms)
+  if(verbose) print(gcms)
+  for(i in seq_along(x)) {
+    xx <- x[[gcms[i]]]
+    if(is.null(xx$project_id)) {
+      print(paste("Warning! project_id is not specified in",xx$filename))
+      yi <- NULL
+    } else if(grepl("cmip",tolower(xx$project_id))) {
+      yi <- metaextract.cmip5(xx,verbose=verbose)
+    }
+    if(verbose) print(i)
+    if(i==1) {
+      Y <- matrix(NA,ncol=ncol(yi),nrow=n)
+      colnames(Y) <- colnames(yi)
+      Y[i,] <- yi
+    } else {
+      cn.all <- unique(c(colnames(Y),colnames(yi)))
+      Y.new <- matrix(NA,ncol=length(cn.all),nrow=n)
+      colnames(Y.new) <- cn.all
+      j <- sapply(colnames(Y),function(x) which(cn.all==x))
+      Y.new[1:(i-1),j] <- Y[1:(i-1),]
+      for(cn in colnames(yi)) {
+        Y.new[i,colnames(Y.new)==cn] <- yi[colnames(yi)==cn]
+      }
+      Y <- Y.new
+    }
+  }
+  Y <- as.data.frame(Y)
+  if(add & file.exists(file)) {
+    # merge old and new meta data - add and rearrange columns if necessary:
+    load(file)
+    meta.old <- meta
+    if(any(!colnames(Y)%in%colnames(meta.old))) {
+      new.cols <- colnames(Y)[!colnames(Y)%in%colnames(meta.old)] 
+      for(n in new.cols) meta.old[[n]] <- rep(NA,nrow(meta.old))
+    }
+    if(any(!colnames(meta.old)%in%colnames(Y))) {
+      new.cols <- colnames(meta.old)[!colnames(meta.old)%in%colnames(Y)] 
+      for(n in new.cols) Y[[n]] <- rep(NA,nrow(Y))
+    }
+    meta <- rbind(meta.old,Y)
+    #meta <- meta[!duplicated(meta),]
+    gcm.i <- substr(meta$url,regexpr("[0-9]{3}.nc",meta$url),
+                    nchar(as.character(meta$url))-3)
+    meta$gcm.i <- gcm.i
+    id <- paste(meta$project_id,meta$experiment,meta$var,meta$gcm.i,sep=".")
+    #id <- paste(meta$project_id,meta$experiment,meta$var,meta$gcm,meta$gcm_rip,sep=".")
+    meta <- meta[order(id),]
+  } else {
+    Y -> meta
+    meta <- meta[!duplicated(meta),]
+  }
+  meta <- meta[!duplicated(meta),]
+  save(meta,file=file)
+  return(meta)
+}

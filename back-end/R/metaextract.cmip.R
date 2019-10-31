@@ -2,7 +2,7 @@ metaextract.cmip <- function(x, verbose=FALSE) {
   if(verbose) print("metaextract.cmip")
   ## argument 'x' is input from getCM, getGCMs, getRCMs etc
   
-  mip_era <- NA; filename <- NA; dim <- NA; dates <- NA
+  project_id <- NA; mip_era <- NA; filename <- NA; dim <- NA; dates <- NA
   var <- NA; longname <- NA; vunit <- NA; vid <- NA
   res <- NA; lon.rng <- NA; lon.unit <- NA; lat.rng <- NA; lat.unit <- NA
   experiment <- NA; experiment_id <- NA; 

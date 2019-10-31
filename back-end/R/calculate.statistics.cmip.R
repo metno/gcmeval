@@ -88,6 +88,7 @@ calculate.statistics.cmip <- function(file.gcm, file.ref=NULL, period=c(1981,201
     res.gcm <- resolution(file.gcm, dim=c("lat","latitude"))
     res.ref <- resolution(file.ref, dim=c("lat","latitude"))
     if(res.ref!=res.gcm) {
+      browser()
       ref.new <- gsub(".nc",paste0("_",sprintf("%.2f",res.gcm),"deg.nc"),basename(file.ref))
       if(file.exists(ref.new)) {
         file.ref <- ref.new

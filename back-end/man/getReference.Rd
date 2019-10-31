@@ -20,15 +20,15 @@ Functions for downloading reference data.
 \code{getGCPC} retrieves GPCP precipitation data.
 }
 \usage{
-getReference(reference,variable,verbose=FALSE)
+getReference(reference,variable,path=NULL,verbose=FALSE)
 getCFSR(variable="tas",destfile=NULL,lon=NULL,lat=NULL,
         griddes="cmip_1.25deg_to_2.5deg.txt",verbose=FALSE)
 getCRU(username,passwd,variable="tmp",version="4.00",
        griddes="cmip_1.25deg_to_2.5deg.txt",destfile=NULL,
        time.resol=NULL, verbose=FALSE)
-getEOBS(variable="tas", destfile=NULL, version="17", lon=NULL, lat=NULL, verbose=FALSE)
+getEOBS(variable="tas", destfile=NULL, path=NULL, version="17", lon=NULL, lat=NULL, verbose=FALSE)
 getERAint(variable,start=1979,end=2017,griddes="cmip_1.25deg_to_2.5deg.txt",
-       destfile=NULL,force=FALSE,verbose=FALSE)
+       destfile=NULL,path=NULL,force=FALSE,verbose=FALSE)
 getGPCP(destfile='gpcp.nc',path=NULL,lon=NULL,lat=NULL,force=FALSE,verbose=FALSE)
 python.getEraint(start,end,varid,steps,type,stream,outfile,verbose=FALSE)
 }

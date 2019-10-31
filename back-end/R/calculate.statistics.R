@@ -17,7 +17,7 @@ calculate.statistics <- function(files.in, meta=NULL, file.out="statistics.rda",
       meta.f <- meta[meta$filename==basename(f),]
     } else {
       nc <- getncid(filename=f, verbose=verbose)
-      meta.f <- metaextract.cmip(nc,verbose=verbose)
+      meta.f <- as.data.frame(metaextract.cmip(nc,verbose=verbose))
     }
     M$filename <- c(M$filename, basename(f))
     for(x in c("var","unit","project_id","experiment","gcm.i")) {
