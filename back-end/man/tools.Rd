@@ -2,6 +2,7 @@
 \alias{find.file}
 \alias{gunzip}
 \alias{resolution}
+\alias{getdim}
 \title{Find files}
 \description{
 Helper function to perform simple tasks in a linux environment
@@ -10,6 +11,7 @@ Helper function to perform simple tasks in a linux environment
 find.file(filename)
 gunzip(filename)
 resolution(filename,dim=c("lon","longitude"),verbose=FALSE)
+getdim(filename,dim=c("lon","longitude"),verbose=FALSE))
 }
 \arguments{
   \item{filename}{name of file}
