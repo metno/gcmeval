@@ -152,6 +152,7 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   } else {
     torigin <- NULL
   }
+
   if (is.null(torigin)) {
     if (verbose) print(paste("Time units:", tunit, " l=", 
                              min(time$vals[is.finite(time$vals)]),"-", 
@@ -198,7 +199,13 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
       if (verbose) warning("Warning : Month origin has been set to:",morigin)
     }
     torigin1 <- paste(yorigin,morigin,dorigin,sep="-")
-    torigin <- paste(torigin1,unlist(strsplit(torigin,split=" "))[2],sep=" ") 
+    if(grepl(" ",torigin)) {
+      torigin <- paste(torigin1,unlist(strsplit(torigin,split=" "))[2],sep=" ")
+    } else {
+      if (verbose) warning("Warning : Hour origin is missing !")
+      torigin <- paste(torigin1,"00:00:00",sep=" ")
+      if (verbose) warning("Warning : Hour origin has been set to: 00")      
+    }
   }
   
   if (!is.null(torigin)) {
@@ -206,7 +213,6 @@ check.ncdf4 <- function(ncid, param="auto", verbose=FALSE) {
   } else if (verbose) {
     print("Checking Time Origin --> [fail]")
   }
-  
   type <- c("year","season","month","day","hour","minute","second")
   type.abb <- substr(tolower(type),1,3)
 
