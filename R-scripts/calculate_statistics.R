@@ -11,17 +11,15 @@ if(!require(gcmeval)) {
   install_github('metno/gcmeval/back-end')
 }
 library(gcmeval)
-source("~/git/gcmeval/back-end/R/calculate.statistics.cmip.R")
-source("~/git/gcmeval/back-end/R/calculate.statistics.R")
 ## To install gcmeval package from local repository: 
 ## R CMD INSTALL gcmeval/back-end
 
 ## Set paths...
 ##...to reference data:
-path.ref <- "/vol/lustre/storeA/users/kajsamp/Data/GCMEval"
+path.ref <- "/path/to/ref"
 ##...to GCM data:
-path.cmip5 <- "/vol/lustre/storeA/users/kajsamp/Data/CMIP5/KNMI"
-path.cmip6 <- "/vol/lustre/storeA/users/oskaral/data/CMIP6/cat"
+path.cmip5 <- "/path/to/CMIP5"
+path.cmip6 <- "/path/to/CMIP6"
 ##...to the metadata and statistics files:
 path.out <- "~/git/gcmeval/R-scripts"
 
@@ -30,6 +28,7 @@ calculate_meta <- FALSE
 calculate_stats <- TRUE
 download_ref <- FALSE
 download_cmip5 <- FALSE
+
 ref.tas <- c("era5","eraint")
 ref.pr <- c("era5","eraint","gpcp")
 verbose <- TRUE
@@ -92,7 +91,8 @@ if(download_ref) {
 ## force=TRUE: When running metaextract on a file that is already in the metadata, extract new metadata and replace the old entry.
 ## force=FALSE: When running metaextract on a file that is already in the metadata, do not extract new metadata.
 if(calculate_meta) {
-  add <- TRUE; force <- TRUE
+  add <- TRUE
+  force <- TRUE
   meta <- metaextract(files.gcm, file.out="meta.rda", path.out=path.out,
                       add=add, force=force, verbose=verbose)
 } else if(file.exists(file.path(path.out, "meta.rda"))) {
@@ -101,23 +101,25 @@ if(calculate_meta) {
   meta <- NULL
 }
 
-## Calculate statistics for future periods
-force <- FALSE
-add <- FALSE
-for(it in list(c(2071,2100),c(2021,2050))) {
-  stats <- c("mean.gcm","spatial.sd.gcm")
-  x <- calculate.statistics(files.gcm, meta=meta, file.out="statistics.rda", path.out=path.out,
-                            ref=NULL, period=it, stats=stats, add=add, force=force, verbose=verbose)
+if(calculate_statistics) {
+  ## Calculate statistics for future periods
+  force <- FALSE
   add <- TRUE
-}
+  for(it in list(c(2071,2100),c(2021,2050))) {
+    stats <- c("mean.gcm","spatial.sd.gcm")
+    x <- calculate.statistics(files.gcm, meta=meta, file.out="statistics.rda", path.out=path.out,
+                              ref=NULL, period=it, stats=stats, add=add, force=force, verbose=verbose)
+    add <- TRUE
+  }
 
-## Calculate statistics for the past
-stats <- c("mean.gcm","spatial.sd.gcm","mean.ref","spatial.sd.ref","corr","rmse","cmpi")
-for(ref in unique(c(ref.tas,ref.pr))) {
-  x <- calculate.statistics(files.gcm, meta=meta, file.out="statistics.rda", path.out=path.out,
-                            ref=ref, path.ref=path.ref, period=c(1981,2010), 
-                            stats=stats, add=add, force=force, verbose=verbose)
-  add <- TRUE
-  stats <- c("mean.ref","spatial.sd.ref","corr","rmse","cmpi")
+  ## Calculate statistics for the past
+  stats <- c("mean.gcm","spatial.sd.gcm","mean.ref","spatial.sd.ref","corr","rmse","cmpi")
+  for(ref in unique(c(ref.tas,ref.pr))) {
+    x <- calculate.statistics(files.gcm, meta=meta, file.out="statistics.rda", path.out=path.out,
+                              ref=ref, path.ref=path.ref, period=c(1981,2010), 
+                              stats=stats, add=add, force=force, verbose=verbose)
+    add <- TRUE
+    stats <- c("mean.ref","spatial.sd.ref","corr","rmse","cmpi")
+  }
 }
 
