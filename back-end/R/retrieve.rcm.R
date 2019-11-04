@@ -1,4 +1,4 @@
-retrieve.rcm <- function(ncfile,...,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
+retrieve.rcm <- function(ncfile,path=NULL,param=NULL,is=NULL,it=NULL,verbose=FALSE) {
     if(verbose) print("retrieve.rcm")
     if (!is.null(path)) {
       ncfile <- file.path(path,ncfile,fsep = .Platform$file.sep)

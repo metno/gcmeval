@@ -1,4 +1,4 @@
-getdim <- function(filename,dim=c("lon","longitude"), verbose=FALSE) {
+getdim <- function(filename, dim=c("lon","longitude"), verbose=FALSE) {
   if(verbose) print("resolution")
   nc <- ncdf4::nc_open(filename)
   dimnames <- names(nc$dim)

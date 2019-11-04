@@ -1,7 +1,7 @@
 retrieve.ncdf4 <- function (ncfile=ncfile, path=NULL , param="auto",
                             lon=NULL, lat=NULL, lev=NULL, it=NULL,
                             miss2na=TRUE, greenwich=FALSE,
-                            plot=FALSE, verbose=FALSE, ...)  {
+                            verbose=FALSE)  {
   if(verbose) print("retrieve.ncdf4")
   lon.rng  <- lon
   lat.rng  <- lat

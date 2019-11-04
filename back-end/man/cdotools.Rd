@@ -18,8 +18,8 @@ cdo.spatSd(model.file,period=c(1981,2010),mask=NULL,seasonal=FALSE,
            monthly=FALSE,bit=8,verbose=FALSE)
 cdo.gridcor(model.file,reference.file,period=c(1981,2010),mask=NULL,
             seasonal=FALSE,monthly=FALSE,bit=8,verbose=FALSE)
-cdo.regrid(model.file,outfile=NULL,res.lon=2.5,res.lat=2.5,
-           remap="remapcon",bit=8,verbose=FALSE)        
+cdo.regrid(model.file,outfile=NULL,lon.out=NULL,lat.out=NULL,
+           res.lon=NULL,res.lat=NULL,remap="remapcon",bit=8,verbose=FALSE)        
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -36,8 +36,10 @@ cdo.regrid(model.file,outfile=NULL,res.lon=2.5,res.lat=2.5,
   \item{seasonal}{if TRUE return seasonal mean values}
   \item{monthly}{if TRUE return monthly mean values}
   \item{is.temp}{a logical indicating if the input is temperature data, in which case some corrections may be applied}
-  \item{res.lon}{Target longitude resolution}
-  \item{res.lat}{Target latitude resolution}
+  \item{lon.out}{a vector with the target longitudes}
+  \item{lat.out}{a vector with the target latitudes}
+  \item{res.lon}{target longitude resolution (only used if lon.out is NULL)}
+  \item{res.lat}{target latitude resolution (only used if lat.out is NULL)}
   \item{remap}{CDO operator used for horizontal interpolation: 
     remapbil - Bilinear interpolation
     remapbic - Bicubic interpolation
