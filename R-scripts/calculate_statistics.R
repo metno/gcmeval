@@ -25,7 +25,7 @@ path.out <- "~/git/gcmeval/R-scripts"
 
 ## Set options for calculations:
 calculate_meta <- FALSE
-calculate_stats <- TRUE
+calculate_statistics <- TRUE
 download_ref <- FALSE
 download_cmip5 <- FALSE
 
