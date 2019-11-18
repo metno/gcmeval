@@ -4,16 +4,28 @@ source("global.R")
 ## Define a server for the Shiny app
 shinyServer(function(input, output, session) {
 
+  #input <- list("rcp"=c("RCP 4.5", "RCP 8.5", "SSP585"), 
+  #              "regionwm1"="Alaska/N.W. Canada [ALA:1]", "wmreg1"=2, 
+  #              "regionwm2" = "global", "wmreg2"=1,
+  #              "wmdt"=1, "wmdp"=1, "wmann"=1, "wmdjf"=1, "wmmam"=1, "wmjja"=1, "wmson"=1,
+  #              "wmbias"=1, "wmsc"=1, "wmsd"=1, "wmrmse"=1, 
+  #              "season"="Annual mean", "period"="Far future (2071-2100)", "rcp"=c("RCP 4.5", "RCP 8.5", "SSP858"),
+  #              "xlim"=c(-8,8), "ylim"=c(-1.2,1.2), "ngcm"=10, "gcms"=gcmnames[1:10],
+  #              "tasref"="ERA5", "prref"="GPCP", "baseensemble"=gcmnames)
+
   stats <- reactive({
     Y <- list()
-    for(var in names(stats.both)) {
-      X <- stats.both[[var]][[clean(input$rcp)]]
-      for(period in names(X)) {
-        plab <- periodlabel(period)
-        n <- names(X[[period]])
-        gcms <- n[grepl("gcm",n)][gcmnames %in% input$baseensemble]
-        i <- which(n %in% gcms | !grepl("gcm",n))
-        Y[[var]][[plab]] <- X[[period]][i]
+    for(var in names(stats.all)) {
+      for(rcp in input$rcp) {
+        X <- stats.all[[var]][[clean(rcp)]]
+        for(period in names(X)) {
+          plab <- period2label(period)
+          n <- names(X[[period]])
+          gcms <- n[n %in% input$baseensemble]
+          for(gcm in gcms[order(gcms)]) {
+            Y[[var]][[plab]][[paste(clean(rcp),gcm,sep=".")]] <- X[[period]][[gcm]]
+          }
+        }
       }
     }
     return(Y)
@@ -33,11 +45,14 @@ shinyServer(function(input, output, session) {
     rl[which(rl != "---")]
   })
   
-  im <- reactive({
-    #as.numeric(gsub(":.*","",input$gcms))
-    which(input$baseensemble %in% input$gcms)
+  gcms.selected <- reactive({
+    input$gcms
   })
 
+  im <- reactive({
+    which(input$baseensemble %in% input$gcms)
+  })
+  
   ## Region selection for scatterplot
   get.region <- function(x) {
     if(tolower(x)=="global") {
@@ -68,9 +83,10 @@ shinyServer(function(input, output, session) {
                              "near future (2021-2050)"='nf')})
 
   ## Weighted rank calculations
-  tasRanks <- reactive({ranking.all(stats=stats(),varid="tas",ref=input$tasref,Regions=Regionlist())})
-  prRanks <- reactive({ranking.all(stats=stats(),varid="pr",ref=input$prref,Regions=Regionlist())})
+  tasRanks <- reactive({ranking.all(varid="tas",ref=input$tasref,rcp=input$rcp,Regions=Regionlist())})
+  prRanks <- reactive({ranking.all(varid="pr",ref=input$prref,rcp=input$rcp,Regions=Regionlist())})
 
+  gcmnames_all <- reactive({rownames(tasRanks())})
   seas_varweightedranks <- reactive({
     as.numeric(input$wmdt)*tasRanks()+as.numeric(input$wmdp)*prRanks()})
   seasweightvec <- reactive({as.numeric(c(input$wmann,input$wmdjf,input$wmmam,input$wmjja,input$wmson))})
@@ -80,10 +96,13 @@ shinyServer(function(input, output, session) {
   })
   
   weightedranks_all <- reactive({
-    W <- array(NA,c(length(input$baseensemble),4))
-    for (i in 1:length(input$baseensemble)) {
+    X <- seas_varweightedranks()
+    sw <- seasweightvec()
+    rw <- regweightvec()
+    W <- array(NA,c(nrow(X),4))
+    for (i in 1:nrow(X)) {
       for (j in 1:4) {
-        W[i,j] <- (seasweightvec() %*% seas_varweightedranks()[i,,j,] %*% regweightvec())
+        W[i,j] <- sw %*% X[i,,j,] %*% rw
       }
     }
     invisible(W)
@@ -97,10 +116,10 @@ shinyServer(function(input, output, session) {
   })
 
   ## Weighted spread calculations
-  dtasSpread <- reactive({spread.all(stats(),varid="tas",Regions=Regionlist(),im=NULL)})
-  dtasSelSpread <- reactive({spread.all(stats(),varid="tas",Regions=Regionlist(),im=im())})
-  dprSpread <- reactive({spread.all(stats(),varid="pr",Regions=Regionlist(),im=NULL)})
-  dprSelSpread <- reactive({spread.all(stats(),varid="pr",Regions=Regionlist(),im=im())})
+  dtasSpread <- reactive({spread.all(varid="tas",rcp=input$rcp,Regions=Regionlist(),im=NULL)})
+  dtasSelSpread <- reactive({spread.all(varid="tas",rcp=input$rcp,Regions=Regionlist(),im=gcms.selected())})
+  dprSpread <- reactive({spread.all(varid="pr",rcp=input$rcp,Regions=Regionlist(),im=NULL)})
+  dprSelSpread <- reactive({spread.all(varid="pr",rcp=input$rcp,Regions=Regionlist(),im=gcms.selected())})
   dtasRelSpread <- reactive({dtasSelSpread()/dtasSpread()})
   dprRelSpread <- reactive({dprSelSpread()/dprSpread()})
   seas_varweightedspread <- reactive({(as.numeric(input$wmdt)*dtasRelSpread() + 
@@ -136,27 +155,27 @@ shinyServer(function(input, output, session) {
   
   # Statistics used in the app
   # Region 1
-  spreadPr1 <- reactive({60*60*24*spread(stats(), varid="pr", season=input$season, 
+  spreadPr1 <- reactive({60*60*24*spread(varid="pr", season=input$season, 
                                    region=input$regionwm1, period=Period(), im=NULL)})
-  spreadPrSel1 <- reactive({60*60*24*spread(stats(), varid="pr", season=input$season, 
-                                      region=input$regionwm1, period=Period(), im=im())})
-  spreadTas1 <- reactive({spread(stats(), varid="tas", season=input$season, 
+  spreadPrSel1 <- reactive({60*60*24*spread(varid="pr", season=input$season, 
+                                      region=input$regionwm1, period=Period(), im=gcms.selected())})
+  spreadTas1 <- reactive({spread(varid="tas", season=input$season, 
                            region=input$regionwm1, period=Period(), im=NULL)})
-  spreadTasSel1 <- reactive({spread(stats(), varid="tas", season=input$season, region=input$regionwm1,
-                              period=Period(), im=im())})
+  spreadTasSel1 <- reactive({spread(varid="tas", season=input$season, region=input$regionwm1,
+                              period=Period(), im=gcms.selected())})
   spreadPrRel1 <- reactive({spreadPrSel1()/spreadPr1()})
   spreadPrIndx1 <- reactive({as.integer(mean(spreadPrRel1())*10)+1 })
   spreadTasRel1 <- reactive({spreadTasSel1()/spreadTas1()})
   spreadTasIndx1 <- reactive({as.integer(mean(spreadTasRel1())*10)+1 })
   # Region 2
-  spreadPr2 <- reactive({60*60*24*spread(stats(), varid="pr", season=input$season, 
+  spreadPr2 <- reactive({60*60*24*spread(varid="pr", season=input$season, 
                                         region=input$regionwm2, period=Period(), im=NULL)})
-  spreadPrSel2 <- reactive({60*60*24*spread(stats(), varid="pr", season=input$season, 
-                                           region=input$regionwm2, period=Period(), im=im())})
-  spreadTas2 <- reactive({spread(stats(), varid="tas", season=input$season, 
+  spreadPrSel2 <- reactive({60*60*24*spread(varid="pr", season=input$season, 
+                                           region=input$regionwm2, period=Period(), im=gcms.selected())})
+  spreadTas2 <- reactive({spread(varid="tas", season=input$season, 
                                 region=input$regionwm2, period=Period(), im=NULL)})
-  spreadTasSel2 <- reactive({spread(stats(), varid="tas", season=input$season, region=input$regionwm2,
-                                   period=Period(), im=im())})
+  spreadTasSel2 <- reactive({spread(varid="tas", season=input$season, region=input$regionwm2,
+                                   period=Period(), im=gcms.selected())})
   spreadPrRel2 <- reactive({spreadPrSel2()/spreadPr2()})
   spreadPrIndx2 <- reactive({as.integer(mean(spreadPrRel2())*10)+1 })
   spreadTasRel2 <- reactive({spreadTasSel2()/spreadTas2()})
@@ -164,9 +183,11 @@ shinyServer(function(input, output, session) {
   
   # Generate table with selected GCMs and their ranking
   gcmtable <- reactive({
-    Z <- cbind(as.character(im()),
-               gsub(".*:","",input$baseensemble[im()]),
+    Z <- cbind(im(), gsub(".*:","",gcms.selected()),
                as.character(weightedrank()))
+    #Z <- cbind(as.character(im()),
+    #           gsub(".*:","",input$baseensemble[im()]),
+    #           as.character(weightedrank()))
     Z <- as.data.frame(Z)
     colnames(Z) <- c("#","Model name","Rank")
     return(Z)
@@ -373,7 +394,8 @@ shinyServer(function(input, output, session) {
   ## Output: scatterplot of temperature and precip. change 
   
   clr <- reactive({
-    colvec <- two.colors(n=length(input$baseensemble), start="green", end="red", middle="orange")
+    browser()
+    colvec <- two.colors(n=length(weightedrank_all()), start="green", end="red", middle="orange")
     colrank <- colvec[weightedrank_all()]
     c1 <- rgb(116,196,215,150,maxColorValue=255)
     c2 <- rgb(0,144,168,255,maxColorValue=255)
@@ -381,7 +403,7 @@ shinyServer(function(input, output, session) {
       x <- adjustcolor(colrank, alpha.f=0.4)
       x[im()] <- adjustcolor(colrank[im()], alpha=0.9)
     } else {
-      x <- rep(c1,length(input$baseensemble))
+      x <- rep(c1,length(wr))
       x[im()] <- c2
     }
     return(x)
@@ -418,12 +440,12 @@ shinyServer(function(input, output, session) {
   dtdpr1 <- reactive({
     p <- plot_ly(data.frame(x=dtas1(),y=dpr1()), x=~x, y=~y, type="scatter", mode="markers",
             marker=list(color=clr(), size=sz(), line=list(color=clr.line(), width=1.2)),
-            text=paste(input$baseensemble,"\nWeighted rank:",weightedrank_all()), source="A",
+            text=paste(gcmnames_all(),"\nWeighted rank:",weightedrank_all()), source="A",
             name="Selected models") %>%
     add_trace(x=mean(dtas1()), y=mean(dpr1()), name="mean of all",
               marker=list(symbol="star", color='yellow', size=10, 
                           line=list(color='black', width=1))) %>%
-    add_trace(x=mean(dtas1()[im()]), y=mean(dpr1()[im()]), 
+    add_trace(x=mean(dtas1()[gcmnames_all() %in% im()]), y=mean(dpr1()[gcmnames_all() %in% im()]), 
               name="mean of selection",
               marker=list(symbol='star', color='red', size=10,
                           line=list(color='black', width=1))) %>%
@@ -441,7 +463,7 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$download2, {
     filename <- paste("gcmeval",gsub("[::punct::]","",gsub(".*\\[|\\].*","",input$regionwm2)),
-                      clean(input$season),clean(input$rcp),
+                      clean(input$season),clean(paste(input$rcp,collapse="")),
                       gsub("[0-9]","",clean(input$period)),"png",sep=".")
     orca(dtdpr2(), file=filename, scale=3, width=1000, height=700)
   })
@@ -451,16 +473,18 @@ shinyServer(function(input, output, session) {
     dtdpr2()
   })
   
+  im2 <- gcmst() %in% im()
+    
   # Region 2
   dtdpr2 <- reactive({
     p <- plot_ly(data.frame(x=dtas2(),y=dpr2()), x=~x, y=~y, type="scatter", mode="markers",
                  marker=list(color=clr(), size=sz(), line=list(color=clr.line(), width=1.2)),
-                 text=paste(input$baseensemble,"\nWeighted rank:",weightedrank_all()), source="A",
+                 text=paste(gcmst(),"\nWeighted rank:",weightedrank_all()), source="A",
                  name="Selected models") %>%
       add_trace(x=mean(dtas2()), y=mean(dpr2()), name="mean of all",
                 marker=list(symbol="star", color='yellow', size=10, 
                             line=list(color='black', width=1))) %>%
-      add_trace(x=mean(dtas2()[im()]), y=mean(dpr2()[im()]), 
+      add_trace(x=mean(dtas2()[gcmst() %in% im()]), y=mean(dpr2()[gcmnames_all() %in% im()]), 
                 name="mean of selection",
                 marker=list(symbol='star', color='red', size=10,
                             line=list(color='black', width=1))) %>%
@@ -474,35 +498,36 @@ shinyServer(function(input, output, session) {
                                 "\nPresent day (1981-2010) to ",tolower(input$period))),
                                 showarrow=FALSE, font=list(size=13,color = 'grey'),
 				align="left"))
-
+      browser()
   })
   
-  output$clickevent <- renderPrint({
-    event_data("plotly_click", source="A")
-  })
+  ## KMP 2019-11-18: temporarily removed plotly_click
+  #output$clickevent <- renderPrint({
+  #  event_data("plotly_click", source="A")
+  #})
 
   # Link to skill evaluation from introduction text
   observeEvent(input$link_to_selection, {
     js$refocus("ngcm")
   })
   
+  ## KMP 2019-11-18: temporarily removed plotly_click
   # When selecting GCMs in plotly scatterplot, update gcms and ngcm
-  observe({
-    d <- event_data(event="plotly_click", source="A")
-    if(!is.null(d)) {
-      #i <- sort(unique(c(as.numeric(gsub(":.*","",input$gcms)),d$pointNumber+1)))
-      i <- sort(unique(c(which(input$baseensemble %in% input$gcms),d$pointNumber+1)))
-      updateCheckboxGroupInput(session, inputId = "gcms", 
-                               choices = input$baseensemble, selected = input$baseensemble[i])
-      updateNumericInput(session, inputId = "ngcm", value=length(input$gcms), 
-                         min=1, max=length(input$baseensemble))
-    }
-  })
+  #observe({
+  #  d <- event_data(event="plotly_click", source="A")
+  #  if(!is.null(d)) {
+  #    #i <- sort(unique(c(as.numeric(gsub(":.*","",input$gcms)),d$pointNumber+1)))
+  #    i <- sort(unique(c(which(input$baseensemble %in% input$gcms),d$pointNumber+1)))
+  #    updateCheckboxGroupInput(session, inputId = "gcms", 
+  #                             choices = input$baseensemble, selected = input$baseensemble[i])
+  #    updateNumericInput(session, inputId = "ngcm", value=length(input$gcms), 
+  #                       min=1, max=length(input$baseensemble))
+  #  }
+  #})
 
   ## This doesn't work. Don't know how to access the plot (p) after rendering it
   ## When changing range in plotly scatterplot, update xlim and ylim
   #selectedPlot <- reactive({
-  #  browser()
   #  p <- plotlyOutput('dtdpr1')
   #  plotly_data()
   #  output$dtdpr
@@ -559,11 +584,16 @@ shinyServer(function(input, output, session) {
     js$resetClick()
   })
   
-  # Reset plotly clicks when changing GCM selection (gcms)  
+  # Update gcmnames when changing the base ensemble
   observeEvent(input$baseensemble,{
     i <- which(input$baseensemble %in% input$gcms)
     updateCheckboxGroupInput(session, inputId = "gcms", choices = input$baseensemble, 
                              selected = input$baseensemble[i])
-  })  
+  })
+  
+  # Change list of gcmnames when changing the rcp
+  #observeEvent(input$rcp,{
+  #  
+  #})
   
 })
