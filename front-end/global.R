@@ -84,6 +84,26 @@ label2period <- function(x="present") {
   return(period)
 }
 
+gcmlabel <- function(x) {
+  gcm <- paste0(gsub("rcp[0-9]{1,3}.|ssp[0-9]{1,3}.|CMIP[0-9].|.r[0-9]{1,2}i[0-9]{1,2}.*.","",x))
+  cmip <- substr(x, regexpr("CMIP",x), regexpr("CMIP",x)+4)
+  rip <- sapply(x, function(y) { if(grepl("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}f[0-9]{1,2}", y)) {
+      i <- regexpr("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}f[0-9]{1,2}",y)
+    } else {
+      i <- regexpr("r[0-9]{1,2}i[0-9]{1,2}p[0-9]{1,2}",y)
+    }
+    return(substr(y, i, i+attr(i,"match.length")-1)) 
+  })
+  exp <- sapply(x, function(y) { if(grepl("rcp[0-9]{1,2}", y)) {
+      i <- regexpr("rcp[0-9]{1,2}",y)
+    } else {
+      i <- regexpr("ssp[0-9]{1,3}",y)
+    }
+    return(substr(y, i, i+attr(i,"match.length")-1)) 
+  })
+  return(list("gcm"=gcm, "cmip"=cmip, "rip"=rip, "exp"=exp))
+}
+
 # Load stats and remove not common GCMs from stats
 metaPrep <- function(rcp="rcp45") {
   exp <- clean(unique(meta$experiment))
@@ -291,7 +311,6 @@ ranking <- function(stats=NULL, measure="bias", varid="tas", season="ann",
       Z[[names(X)[[i]]]] <- y 
     }
   }
-  
   gcms <- unlist(lapply(Z, names))
   Z <- unlist(Z)
   if(any(duplicated(gcms))) {
@@ -303,13 +322,11 @@ ranking <- function(stats=NULL, measure="bias", varid="tas", season="ann",
     for(gcm in gcms[duplicated(gcms)]) {
       skill[gcms==gcm] <- skill[gcms==gcm][[1]]
     }
+    names(skill) <- names(Z)
   } else {
     skill <- rank(Z)
   }
-  #  Z <- Z[!duplicated(gcms)]
-  #  gcms <- gcms[!duplicated(gcms)]
-  #}
-  #names(skill) <- gcms
+  skill <- skill[order(names(skill))]
   return(skill)
 }
 

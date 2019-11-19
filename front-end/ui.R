@@ -191,13 +191,13 @@ dashboardPage(
                           min = -20, 
                           max = 20,
                           step = 0.25,
-                          value = c(-8,8)),
+                          value = c(-15,15)),
               sliderInput("ylim", 
                           label = "Precipitation range",
                           min = -4, 
                           max = 4,
                           step = 0.2,
-                          value = c(-1.2,1.2))
+                          value = c(-1.5,1.5))
       ),
       menuItem("Model selection", tabName = "selection", icon=NULL, collapsed=FALSE, width='210px',
               numericInput("ngcm",
