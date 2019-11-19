@@ -6,7 +6,8 @@ gen.mask.srex <- function(destfile, mask.polygon=NULL, ind=FALSE, inverse=FALSE,
   r <- raster::raster(destfile)
   r <- raster::setValues(r,NA)
   extent.r <- raster::extent(r)
-  if(extent.r[2]==360) raster::extent(r) <- c(-180,180,-90,90)
+  #if(extent.r[2]==360) raster::extent(r) <- c(-180,180,-90,90)
+  if(extent.r[2]>180) raster::extent(r) <- c(-180,180,-90,90)
   indices <- raster::extract(r,mask.polygon,cellnumbers=TRUE)[[1]][,1]
   if(raster::extent(mask.polygon)[2]>180){
     raster::extent(r) <- c(180,540,-90,90)

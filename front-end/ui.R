@@ -179,24 +179,25 @@ dashboardPage(
                             "Near future (2021-2050)"),
                 selected = "Far future (2071-2100)"
               ),
-              selectInput(
+              #selectInput(
+              checkboxGroupInput(
                 "rcp",
                 label = "Emission scenario",
-                choices = c("RCP 4.5", "RCP 8.5"),
-                selected = "RCP 4.5"
+                choices = c("RCP 4.5", "RCP 8.5", "SSP585"),
+                selected = c("RCP 4.5", "RCP 8.5", "SSP585")
               ),
               sliderInput("xlim", 
                           label = "Temperature range",
                           min = -20, 
                           max = 20,
                           step = 0.25,
-                          value = c(-8,8)),
+                          value = c(-15,15)),
               sliderInput("ylim", 
                           label = "Precipitation range",
                           min = -4, 
                           max = 4,
                           step = 0.2,
-                          value = c(-1.2,1.2))
+                          value = c(-1.5,1.5))
       ),
       menuItem("Model selection", tabName = "selection", icon=NULL, collapsed=FALSE, width='210px',
               numericInput("ngcm",

@@ -83,22 +83,37 @@ calculate.statistics.cmip <- function(file.gcm, file.ref=NULL, period=c(1981,201
       X[["GCM"]]$global$mean <- as.list(c(cdo.mean(file.gcm,period),
                                           cdo.mean(file.gcm,period,monthly=TRUE)))
   }
+  gcm.new <- NULL
+  if(any(c("corr","rmse") %in% stats)) {
+    lon.gcm <- getdim(file.gcm,c("lon","longitude"))
+    lat.gcm <- getdim(file.gcm,c("lat","latitude"))
+    lon.ref <- getdim(file.ref,c("lon","longitude"))
+    lat.ref <- getdim(file.ref,c("lat","latitude"))
+    res.gcm <- c(min(diff(lon.gcm)), min(diff(lat.gcm)))
+    res.ref <- c(min(diff(lon.ref)), min(diff(lat.ref)))
+    if(any(res.gcm<res.ref) | length(unique(diff(lon.gcm)))>1 |
+                              length(unique(diff(lat.gcm)))>1) {
+      gcm.new <- gsub(".nc",paste0("_",paste(round(res.ref,digits=2),collapse="x"),"deg.nc"),
+                      basename(file.gcm))
+      if(!file.exists(gcm.new)) {
+        if(verbose) print("Regrid GCM data to reference grid.")
+        cdo.regrid(file.gcm, gcm.new, lon.out=lon.ref, lat.out=lat.ref,
+                   remap="remapcon",verbose=verbose)
+      }
+      file.gcm <- gcm.new
+    } else if(any(res.gcm!=res.ref)) {
+      ref.new <- gsub(".nc",paste0("_",paste(round(res.gcm,digits=2),collapse="x"),"deg.nc"),
+                      basename(file.ref))
+      if(!file.exists(ref.new)) {
+        if(verbose) print("Regrid reference data to GCM grid.")
+        cdo.regrid(file.ref, ref.new, lon.out=lon.gcm, lat.out=lat.gcm,
+                   remap="remapcon",verbose=verbose)
+      }
+      file.ref <- ref.new
+    }
+  }
   if("corr" %in% stats) {
     if(verbose) print("spatial correlation")
-    res.gcm <- resolution(file.gcm, dim=c("lat","latitude"))
-    res.ref <- resolution(file.ref, dim=c("lat","latitude"))
-    if(res.ref!=res.gcm) {
-      browser()
-      ref.new <- gsub(".nc",paste0("_",sprintf("%.2f",res.gcm),"deg.nc"),basename(file.ref))
-      if(file.exists(ref.new)) {
-        file.ref <- ref.new
-      } else {
-        if(verbose) print("Regrid reference data to GCM grid")
-        cdo.regrid(file.ref,ref.new,res.lon=res.gcm,res.lat=res.gcm,
-                   remap="remapcon",verbose=verbose)
-        file.ref <- ref.new
-      }
-    }
     X[["GCM"]]$global$corr[[ref]] <- as.list(c(cdo.gridcor(file.gcm,file.ref,period),
                                                cdo.gridcor(file.gcm,file.ref,period,monthly=TRUE)))
   }
@@ -146,7 +161,7 @@ calculate.statistics.cmip <- function(file.gcm, file.ref=NULL, period=c(1981,201
     if("rmse" %in% stats) { 
       if(!"rmse" %in% names(X[["GCM"]][[srex.regions[j]]])) {
         if(verbose) print("rmse")
-        mask.j <- gen.mask.srex(destfile=file.gcm,mask.polygon=shape[j,])
+        mask.j <- gen.mask.srex(file.gcm,mask.polygon=shape[j,])
         dim(gcm.mon) <- dim(ref.mon) <- c(12,length(attr(ref.mon,"longitude"))*length(attr(ref.mon,"latitude")))
         gcm.masked <- mask.zoo(gcm.mon,mask.j)
         ref.masked <- mask.zoo(ref.mon,mask.j)
@@ -161,7 +176,9 @@ calculate.statistics.cmip <- function(file.gcm, file.ref=NULL, period=c(1981,201
   if("rmse" %in% stats) {
     file.remove(gcm.mon.file)
     file.remove(ref.mon.file)
-   }
+  }
+  if(!is.null(gcm.new)) file.remove(gcm.new)
+  
   if(verbose) print("Done!")
   invisible(X)
 }

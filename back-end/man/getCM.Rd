@@ -9,7 +9,7 @@
 \title{
 Download GCM and RCM data
 }
-\description{\code{getCM} downloads GCM or RCM data from given a URL. \code{getGCMs} and \code{getCMIP5} are identical and both retrieve CMIP5 data from the KNMI climate data explorer, generating the URLs with \code{cmip5.urls} and \code{cordex.urls}. \code{getatt} reads and extracts the attribute information in a netCDF files and stores this in a list object. \code{getncid} extracts additional information from a netCDF file. 
+\description{\code{getCM} downloads GCM or RCM data from given a URL. \code{getGCMs} and \code{getCMIP5} are identical and both retrieve CMIP5 data from the KNMI climate data explorer, generating the URLs with \code{cmip5.urls} and \code{cordex.urls}. \code{getatt} reads and extracts the attribute information in a netCDF files and stores this in a list object. \code{getncid} extracts additional information from a netCDF file.
 }
 \usage{
 getCM(url=NULL,destfile='CM.nc',path=NULL,

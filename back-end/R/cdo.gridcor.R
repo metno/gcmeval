@@ -34,7 +34,7 @@ cdo.gridcor <- function(model.file,reference.file,period=c(1981,2010),mask=NULL,
     names(out) <- c("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec")
   } else if(seasonal){
     names(out) <- c("djf","mam","jja","son")
-  }else{
+  } else{
     names(out) <- "ann"
   }
   system("rm tmp.nc tmp2.nc tmp_cor.nc")
