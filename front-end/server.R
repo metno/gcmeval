@@ -179,12 +179,16 @@ shinyServer(function(input, output, session) {
     gcms_all <- gcmnamesRanks()
     gcms <- gcms_all[!duplicated(gcms_all)]
     i <- which(gcms %in% gcmsSelected())
-    x <- gcmlabel(gcmsSelected())
-    wr <- weightedrank_all()[imSelected()]
-    wr <- wr[!duplicated(wr)]
-    Z <- cbind(as.character(i),
-               paste0(x$gcm,".",x$rip," (",toupper(x$cmip),")"),
-               as.character(wr))
+    if(any(i)) {
+      x <- gcmlabel(gcmsSelected())
+      wr <- weightedrank_all()[imSelected()]
+      wr <- wr[!duplicated(wr)]
+      Z <- cbind(as.character(i),
+                 paste0(x$gcm,".",x$rip," (",toupper(x$cmip),")"),
+                 as.character(wr))
+    } else {
+      Z <- cbind("-","no selected models","-")
+    }
     Z <- as.data.frame(Z)
     colnames(Z) <- c("#","Model name","Rank")
     return(Z)
