@@ -179,13 +179,6 @@ dashboardPage(
                             "Near future (2021-2050)"),
                 selected = "Far future (2071-2100)"
               ),
-              #selectInput(
-              checkboxGroupInput(
-                "rcp",
-                label = "Emission scenario",
-                choices = c("RCP 4.5", "RCP 8.5", "SSP585"),
-                selected = c("RCP 4.5", "RCP 8.5", "SSP585")
-              ),
               sliderInput("xlim", 
                           label = "Temperature range",
                           min = -20, 
@@ -219,10 +212,16 @@ dashboardPage(
                          #  label = "First", 
                          #  width = '150px'
                          #),
+              checkboxGroupInput(
+                "rcp",
+                label = "Emission scenario",
+                choices = c("RCP 4.5", "RCP 8.5", "SSP585"),
+                selected = c("RCP 4.5")
+              ),
               checkboxGroupInput("gcms",
                            label = "Climate models",
-                           choices = gcmnames,
-                           selected = gcmnames[1:10],
+                           choices = gcmnames.all[["rcp45"]],
+                           selected = gcmnames.all[["rcp45"]][1:10],
                            inline=TRUE,
                            width='100%'
                          )

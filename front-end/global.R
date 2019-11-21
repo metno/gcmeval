@@ -363,17 +363,22 @@ spread <- function(stats=NULL, varid="tas", season="ann", region="global",
   
   exp <- clean(unique(names(stats[[varid]])))
   exp <- exp[grepl("ssp|rcp",exp)]
-  if(is.null(rcp)) rcp <- exp
-  if("all" %in% rcp | "both" %in% rcp) rcp <- exp
-  if("CMIP5" %in% rcp) rcp <- c(rcp[rcp!="CMIP5"], exp[grepl("rcp",exp)])
-  if("CMIP6" %in% rcp) rcp <- c(rcp[rcp!="CMIP6"], exp[grepl("ssp",exp)])
-  rcp <- rcp[rcp %in% exp]
-  
+  if(is.null(rcp)) {
+    rcp <- exp
+  } else {
+    rcp <- clean(rcp)
+    if("all" %in% rcp | "both" %in% rcp) rcp <- exp
+    if("CMIP5" %in% rcp) rcp <- c(rcp[rcp!="CMIP5"], exp[grepl("rcp",exp)])
+    if("CMIP6" %in% rcp) rcp <- c(rcp[rcp!="CMIP6"], exp[grepl("ssp",exp)])
+    rcp <- rcp[rcp %in% exp]
+  }
+
   p <- label2period(period)
   X <- lapply(rcp, function(exp) stats[[varid]][[exp]][[p]])
   names(X) <- rcp
   Present <- lapply(rcp, function(exp) stats[[varid]][[exp]][[label2period("present")]])
-
+  names(Present) <- rcp
+  
   if(tolower(region)=="global") {
     region <- "global"
   } else {
@@ -388,7 +393,6 @@ spread <- function(stats=NULL, varid="tas", season="ann", region="global",
                      "son"=c("sep","oct","nov"), "Autumn"=c("sep","oct","nov"))
   }
   
-
   gcms.all <- unique(unlist(lapply(X,names)))
   if(is.null(im)) im <- gcms.all
   if(is.numeric(im)) im <- gcms.all[im]
@@ -397,8 +401,8 @@ spread <- function(stats=NULL, varid="tas", season="ann", region="global",
   for(i in 1:length(X)) {
     gcms <- names(X[[i]])
     if(any(im %in% gcms)) {
-      im <- which(gcms %in% im)
-      dX[[names(X)[i]]] <- sapply(gcms[im], 
+      j <- which(gcms %in% im)
+      dX[[names(X)[i]]] <- sapply(gcms[j], 
         function(gcm) { 
           mean(sapply(season, function(s) { X[[i]][[gcm]][[region]][["mean"]][[s]] - Present[[i]][[gcm]][[region]][["mean"]][[s]]}))
         })
