@@ -40,10 +40,6 @@ shinyServer(function(input, output, session) {
     input$gcms
   })
 
-  im <- reactive({
-    which(input$baseensemble %in% input$gcms)
-  })
-  
   ## Region selection for scatterplot
   get.region <- function(x) {
     if(tolower(x)=="global") {
@@ -83,15 +79,15 @@ shinyServer(function(input, output, session) {
   })
 
   gcmnamesRanks <- reactive({gsub("ssp[0-9]{1,3}.|rcp[0-9]{1,3}.","",rownames(tasRanks()))})
-  seas_varweightedranks <- reactive({as.numeric(input$wmdt)*tasRanks()+as.numeric(input$wmdp)*prRanks()})
+  seasVarweightedranks <- reactive({as.numeric(input$wmdt)*tasRanks()+as.numeric(input$wmdp)*prRanks()})
   seasweightvec <- reactive({as.numeric(c(input$wmann,input$wmdjf,input$wmmam,input$wmjja,input$wmson))})
   regweightvec <- reactive({
     rw <- as.numeric(c(input$wmreg1,input$wmreg2))
     rw[which(list(input$regionwm1,input$regionwm2) != "---")] 
   })
   
-  weightedranks_all <- reactive({
-    X <- seas_varweightedranks()
+  weightedranksAll <- reactive({
+    X <- seasVarweightedranks()
     sw <- seasweightvec()
     rw <- regweightvec()
     W <- array(NA,c(nrow(X),4))
@@ -104,8 +100,8 @@ shinyServer(function(input, output, session) {
   })
   
   metweightvec <- reactive({as.numeric(c(input$wmbias,input$wmsd,input$wmsc,input$wmrmse))})
-  weightedrank_all <- reactive({
-    wr_all <- weightedranks_all() %*% metweightvec()
+  weightedrank <- reactive({
+    wr_all <- weightedranksAll() %*% metweightvec()
     x <- gcmlabel(rownames(tasRanks()))
     y <- paste(x$cmip,x$gcm,x$rip,sep=".")
     ranks_all <- rep(0,length(wr_all))
@@ -117,11 +113,11 @@ shinyServer(function(input, output, session) {
   })
   
   best <- reactive({
-    wr <- weightedrank_all()
+    wr <- weightedrank()
     wrmax <- sort(wr[!duplicated(wr)])[input$ngcm]
     i.best <- which(wr<=wrmax & !duplicated(wr))
     return(i.best)
-    #order(weightedrank_all())[1:input$ngcm]
+    #order(weightedrank())[1:input$ngcm]
   })
 
   ## Temperature and precip. spread for scatterplot
@@ -176,43 +172,42 @@ shinyServer(function(input, output, session) {
   
   # Generate table with selected GCMs and their ranking
   gcmtable <- reactive({
-    gcms_all <- gcmnamesRanks()
-    gcms <- gcms_all[!duplicated(gcms_all)]
-    i <- which(gcms %in% gcmsSelected())
-    if(any(i)) {
-      x <- gcmlabel(gcmsSelected())
-      wr <- weightedrank_all()[imSelected()]
-      wr <- wr[!duplicated(wr)]
-      Z <- cbind(as.character(i),
-                 paste0(x$gcm,".",x$rip," (",toupper(x$cmip),")"),
-                 as.character(wr))
+    if(any(imSelected())) {
+      gcms <- gcmnamesRanks()[imSelected()]
+      wr <- weightedrank()[imSelected()]
+      wr <- wr[!duplicated(gcms)]
+      gcms <- gcms[!duplicated(gcms)]
+      wr <- sapply(wr, pad, width=3)
+      Z <- cbind(gcms,wr)
     } else {
-      Z <- cbind("-","no selected models","-")
+      Z <- cbind("no selected models","-")
     }
     Z <- as.data.frame(Z)
-    colnames(Z) <- c("#","Model name","Rank")
+    colnames(Z) <- c("Model name","Rank")
     return(Z)
   })
   
   gcmtableBest <- reactive({
-    x <- gcmlabel(gcmnamesRanks()[best()])
-    Z <- cbind(as.character(best()),
-               paste0(x$gcm,".",x$rip," (",toupper(x$cmip),")"),
-               as.character(weightedrank_all()[best()]))
-    Z <- Z[!is.na(Z[,3]),]
+    gcms <- gcmnamesRanks()[best()]
+    wr <- weightedrank()[best()]
+    wr <- wr[!duplicated(gcms)]
+    gcms <- gcms[!duplicated(gcms)]
+    wr <- sapply(wr, pad, width=3)
+    Z <- cbind(gcms,wr)
     Z <- as.data.frame(Z)
-    colnames(Z) <- c("#","Model name","Rank")
+    colnames(Z) <- c("Model name","Rank")
     return(Z)
   })
 
   gcmtableAll <- reactive({
-    x <- gcmlabel(gcmnamesRanks())
-    Z <- cbind(as.character(seq(length(x$cmip))),
-               paste0(x$gcm,".",x$rip," (",toupper(x$cmip),")"),
-               as.character(weightedrank_all()))
-    Z <- Z[!is.na(Z[,3]),]
+    gcms <- gcmnamesRanks()
+    wr <- weightedrank()
+    wr <- wr[!duplicated(gcms)]
+    gcms <- gcms[!duplicated(gcms)]
+    wr <- sapply(wr, pad, width=3)
+    Z <- cbind(gcms,wr)
     Z <- as.data.frame(Z)
-    colnames(Z) <- c("#","Model name","Rank")
+    colnames(Z) <- c("Model name","Rank")
     return(Z)
   })
   
@@ -231,11 +226,10 @@ shinyServer(function(input, output, session) {
     return(Z)
   })
   ## Calculations used for text colors
-  weightedrank <- reactive({weightedrank_all()[im()]})
-  mean_weightedrank <- reactive({mean(weightedrank(),na.rm=TRUE)})
+  weightedrankMean <- reactive({mean(weightedrank(),na.rm=TRUE)})
   
   legcolsrank <- two.colors(n=107,start="green",end="red",middle = "orange") #colors for ranks
-  meanRelMetricsIndx <- reactive({as.integer(mean_weightedrank())}) #color index based on weighted rank
+  meanRelMetricsIndx <- reactive({as.integer(weightedrankMean())}) #color index based on weighted rank
   
   legcols <- two.colors(n=11,start="red",end="green",middle = "orange") #colors for percentage number
 
@@ -243,7 +237,7 @@ shinyServer(function(input, output, session) {
   colorlist <- c("red","orange","yellow","lime","green")
 
   output$IntroText  <- renderText({
-    paste("This is a tool to help you evaluate subsets of climate models from the CMIP5 ensemble.<br><br>",
+    paste("This is a tool to help you evaluate subsets of climate models from the CMIP5 and CMIP6 ensembles.<br><br>",
           "Step 1) In the <i>'Settings for skill evaluation'</i> menu, select two focus regions ",
           "and set the weights for the regions and various meteorological parameters (temperature and precipitation at the moment), ",
 	  "seasons, and skill scores. Based on your choices, a weighted <b>model skill evaluation</b> is performed and ",
@@ -251,7 +245,7 @@ shinyServer(function(input, output, session) {
 	  "Note that small changes in weights and regions can significantly change the ranking.<br><br>",
           "Step 2) In the <i>'Settings for scatterplots'</i> menu, select a season, time horizon, and emission scenario for the",
           "scatterplots which show the <b>spread of the regional mean climate change</b> among the models. ",
-	  "Now study the scatterplots to evaluate how well the selected subset represents the full CMIP5 ensemble. ",
+	  "Now study the scatterplots to evaluate how well the selected subset represents the full CMIP5 and/or CMIP6 ensemble. ",
 	  "You can also show the model ranking as a color scale (tick the box above the first scatterplot!). ",
 	  "Some additional information will be provided when you hover over the points.<br><br>",
           "Step 3) You can change the subset of models in the <i>'Model Selection'</i> menu ",
@@ -400,7 +394,7 @@ shinyServer(function(input, output, session) {
   })
   
   clr1 <- reactive({
-    wr <- weightedrank_all()
+    wr <- weightedrank()
     colvec <- two.colors(n=length(wr), start="green", end="red", middle="orange")
     colrank <- colvec[wr]
     c1 <- rgb(116,196,215,150,maxColorValue=255)
@@ -413,7 +407,7 @@ shinyServer(function(input, output, session) {
   })
   
   clr2 <- reactive({
-    wr <- weightedrank_all()
+    wr <- weightedrank()
     colvec <- two.colors(n=length(wr), start="green", end="red", middle="orange")
     colrank <- colvec[wr]
     c2 <- rgb(0,144,168,255,maxColorValue=255)
@@ -464,7 +458,7 @@ shinyServer(function(input, output, session) {
   plab <- reactive({
     x <- gcmlabel(names(dtas1()))
     y <- paste0(x$gcm,".",x$rip," (",toupper(x$cmip)," ",toupper(x$exp),")",
-                "\nWeighted rank: ",weightedrank_all())
+                "\nWeighted rank: ",weightedrank())
     return(y)
   })
     
@@ -476,8 +470,8 @@ shinyServer(function(input, output, session) {
     p <- plot_ly(data.frame(x=dtas1()[im.rcp45],y=dpr1()[im.rcp45]), x=~x, y=~y, type="scatter", mode="markers",
             marker=list(color=clr1()[im.rcp45], size=sz()[im.rcp45], symbol="circle", 
                         line=list(color=clr1()[im.rcp45], width=1.2)),
-            text=plab()[im.rcp45], source="A", name="RCP 4.5") %>%
-    add_trace(x=dtas1()[im.rcp85], y=dpr1()[im.rcp85], name="RCP 8.5", text=plab()[im.rcp85],
+            text=plab()[im.rcp45], source="A", name="RCP4.5") %>%
+    add_trace(x=dtas1()[im.rcp85], y=dpr1()[im.rcp85], name="RCP8.5", text=plab()[im.rcp85],
               marker=list(color=clr1()[im.rcp85], size=sz()[im.rcp85], symbol="diamond", 
                           line=list(color=clr1()[im.rcp85], width=1.2))) %>%
     add_trace(x=dtas1()[im.ssp585], y=dpr1()[im.ssp585], name="SSP585", text=plab()[im.ssp585],
@@ -526,8 +520,8 @@ shinyServer(function(input, output, session) {
     p <- plot_ly(data.frame(x=dtas2()[im.rcp45],y=dpr2()[im.rcp45]), x=~x, y=~y, type="scatter", mode="markers",
                  marker=list(color=clr1()[im.rcp45], size=sz()[im.rcp45], symbol="circle", 
                              line=list(color=clr1()[im.rcp45], width=1.2)),
-                 text=plab()[im.rcp45], source="A", name="RCP 4.5") %>%
-      add_trace(x=dtas2()[im.rcp85], y=dpr2()[im.rcp85], name="RCP 8.5", text=plab()[im.rcp85],
+                 text=plab()[im.rcp45], source="A", name="RCP4.5") %>%
+      add_trace(x=dtas2()[im.rcp85], y=dpr2()[im.rcp85], name="RCP8.5", text=plab()[im.rcp85],
                 marker=list(color=clr1()[im.rcp85], size=sz()[im.rcp85], symbol="diamond", 
                             line=list(color=clr1()[im.rcp85], width=1.2))) %>%
       add_trace(x=dtas2()[im.ssp585], y=dpr2()[im.ssp585], name="SSP585", text=plab()[im.ssp585],
