@@ -8,6 +8,13 @@ dashboardPage(
   dashboardSidebar(
     sidebarMenu(width="120px",
       menuItem("Model selection", tabName = "selection", icon=NULL, collapsed=FALSE, width='210px',
+               checkboxGroupInput(
+                            "rcp",
+                            label = "Emission scenarios in base ensemble",
+                            choiceNames = c("RCP4.5 (CMIP5)", "RCP8.5 (CMIP5)", "SSP585 (CMIP6)"),
+                            choiceValues = c("rcp45", "rcp85", "ssp585"),
+                            selected = c("rcp45")
+               ),
                numericInput("ngcm",
                             label = "Ensemble size",
                             value = 10, min = 1,
@@ -21,13 +28,6 @@ dashboardPage(
                actionButton("best", 
                             label = "Best", 
                             width = '150px'
-               ),
-               checkboxGroupInput(
-                            "rcp",
-                            label = "Emission scenarios",
-                            choiceNames = c("RCP4.5 (CMIP5)", "RCP8.5 (CMIP5)", "SSP585 (CMIP6)"),
-                            choiceValues = c("rcp45", "rcp85", "ssp585"),
-                            selected = c("rcp45")
                ),
                checkboxGroupInput("gcms",
                                   label = "Climate models",
