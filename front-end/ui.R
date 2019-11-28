@@ -7,6 +7,36 @@ dashboardPage(
   ),
   dashboardSidebar(
     sidebarMenu(width="120px",
+      menuItem("Model selection", tabName = "selection", icon=NULL, collapsed=FALSE, width='210px',
+               numericInput("ngcm",
+                            label = "Ensemble size",
+                            value = 10, min = 1,
+                            max = length(gcmnames),
+                            width = '150px'
+               ),
+               actionButton("randomize", 
+                            label = "Random", 
+                            width = '150px'
+               ),
+               actionButton("best", 
+                            label = "Best", 
+                            width = '150px'
+               ),
+               checkboxGroupInput(
+                            "rcp",
+                            label = "Emission scenarios",
+                            choiceNames = c("RCP4.5 (CMIP5)", "RCP8.5 (CMIP5)", "SSP585 (CMIP6)"),
+                            choiceValues = c("rcp45", "rcp85", "ssp585"),
+                            selected = c("rcp45")
+               ),
+               checkboxGroupInput("gcms",
+                                  label = "Climate models",
+                                  choices = gcmnames.all[["rcp45"]],
+                                  selected = gcmnames.all[["rcp45"]][1:10],
+                                  inline=TRUE,
+                                  width='100%'
+               )
+      ),                
       menuItem("Settings for skill evaluation", tabName="rank", icon=NULL,
                menuItem("Focus regions", tabName="regionwm", icon=NULL,
                   selectInput(
@@ -191,40 +221,6 @@ dashboardPage(
                           max = 4,
                           step = 0.2,
                           value = c(-1.5,1.5))
-      ),
-      menuItem("Model selection", tabName = "selection", icon=NULL, collapsed=FALSE, width='210px',
-              numericInput("ngcm",
-                           label = "Ensemble size",
-                           value = 10, min = 1,
-                           max = length(gcmnames),
-                           width = '150px'
-                         ),
-              actionButton("randomize", 
-                           label = "Random", 
-                           width = '150px'
-                         ),
-              actionButton("best", 
-                           label = "Best", 
-                           width = '150px'
-                         ),
-                         #actionButton(
-                         #  "first", 
-                         #  label = "First", 
-                         #  width = '150px'
-                         #),
-              checkboxGroupInput(
-                "rcp",
-                label = "Emission scenario",
-                choices = c("RCP 4.5", "RCP 8.5", "SSP585"),
-                selected = c("RCP 4.5")
-              ),
-              checkboxGroupInput("gcms",
-                           label = "Climate models",
-                           choices = gcmnames.all[["rcp45"]],
-                           selected = gcmnames.all[["rcp45"]][1:10],
-                           inline=TRUE,
-                           width='100%'
-                         )
       ),
       menuItem("Advanced settings", tabName="advanced", icon=icon("cog"),
                selectInput(
