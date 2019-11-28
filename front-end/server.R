@@ -228,10 +228,12 @@ shinyServer(function(input, output, session) {
   ## Calculations used for text colors
   weightedrankMean <- reactive({mean(weightedrank(),na.rm=TRUE)})
   
-  legcolsrank <- two.colors(n=107,start="green",end="red",middle = "orange") #colors for ranks
+  #legcolsrank <- two.colors(n=107,start="green",end="red",middle = "orange") #colors for ranks
+  legcolsrank <- colorRampPalette(rev(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26")))(107)
   meanRelMetricsIndx <- reactive({as.integer(weightedrankMean())}) #color index based on weighted rank
   
-  legcols <- two.colors(n=11,start="red",end="green",middle = "orange") #colors for percentage number
+  #legcols <- two.colors(n=11,start="red",end="green",middle = "orange") #colors for percentage number
+  legcols <- colorRampPalette(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26"))(11)
 
   # Color list for summary boxes 
   colorlist <- c("red","orange","yellow","lime","green")
@@ -279,8 +281,9 @@ shinyServer(function(input, output, session) {
   
   bg <- reactive({
     styleEqual(seq(1,length(input$baseensemble),0.5), 
-                   two.colors(n=length(input$baseensemble)*2-1, start="green",
-                              end="red", middle = "orange"))
+                   #two.colors(n=length(input$baseensemble)*2-1, start="green",
+                   #           end="red", middle = "orange"))
+                   colorRampPalette(rev(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26")))(length(input$baseensemble)*2-1))
   })
   
   output$ModelsTable <- DT::renderDataTable({
@@ -362,7 +365,7 @@ shinyServer(function(input, output, session) {
     axis(3,at=pretty(par("xaxp")[1:2],n=5),col='grey50')
     axis(2,at=pretty(par("yaxp")[1:2],n=5),col='grey50')
     grid()
-    lines(region$lon,region$lat,col="#3399CC",lwd=3,lty=1)
+    lines(region$lon,region$lat,col="magenta",lwd=3,lty=1)
   }, width=190,height=130)
   
   ## Output: map 2
@@ -384,7 +387,7 @@ shinyServer(function(input, output, session) {
       axis(3,at=pretty(par("xaxp")[1:2],n=5),col='grey50')
       axis(2,at=pretty(par("yaxp")[1:2],n=5),col='grey50')
       grid()
-      lines(region$lon,region$lat,col="#3399CC",lwd=3,lty=1)
+      lines(region$lon,region$lat,col="magenta",lwd=3,lty=1)
     }}, width=190,height=130)
 
   ## Output: scatterplot of temperature and precip. change 
@@ -395,7 +398,8 @@ shinyServer(function(input, output, session) {
   
   clr1 <- reactive({
     wr <- weightedrank()
-    colvec <- two.colors(n=length(wr), start="green", end="red", middle="orange")
+    #colvec <- two.colors(n=length(wr), start="green", end="red", middle="orange")
+    colvec <- colorRampPalette(rev(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26")))(length(wr))
     colrank <- colvec[wr]
     c1 <- rgb(116,196,215,150,maxColorValue=255)
     if(input$show.ranking) {
@@ -408,7 +412,8 @@ shinyServer(function(input, output, session) {
   
   clr2 <- reactive({
     wr <- weightedrank()
-    colvec <- two.colors(n=length(wr), start="green", end="red", middle="orange")
+    #colvec <- two.colors(n=length(wr), start="green", end="red", middle="orange")
+    colvec <- colorRampPalette(rev(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26")))(length(wr))
     colrank <- colvec[wr]
     c2 <- rgb(0,144,168,255,maxColorValue=255)
     if(input$show.ranking) {
