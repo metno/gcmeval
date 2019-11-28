@@ -364,7 +364,7 @@ shinyServer(function(input, output, session) {
     axis(3,at=pretty(par("xaxp")[1:2],n=5),col='grey50')
     axis(2,at=pretty(par("yaxp")[1:2],n=5),col='grey50')
     grid()
-    lines(region$lon,region$lat,col="blue",lwd=1.5,lty=1)
+    lines(region$lon,region$lat,col="#3399CC",lwd=3,lty=1)
   }, width=190,height=130)
   
   ## Output: map 2
@@ -386,7 +386,7 @@ shinyServer(function(input, output, session) {
       axis(3,at=pretty(par("xaxp")[1:2],n=5),col='grey50')
       axis(2,at=pretty(par("yaxp")[1:2],n=5),col='grey50')
       grid()
-      lines(region$lon,region$lat,col="blue",lwd=1.5,lty=1)
+      lines(region$lon,region$lat,col="#3399CC",lwd=3,lty=1)
     }}, width=190,height=130)
 
   ## Output: scatterplot of temperature and precip. change 
