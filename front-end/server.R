@@ -403,7 +403,7 @@ shinyServer(function(input, output, session) {
     colrank <- colvec[wr]
     c1 <- rgb(116,196,215,150,maxColorValue=255)
     if(input$show.ranking) {
-      x <- adjustcolor(colrank, alpha.f=0.4)
+      x <- adjustcolor(colrank, alpha.f=0.7)
     } else {
       x <- rep(c1,length(wr))
     }
@@ -417,7 +417,7 @@ shinyServer(function(input, output, session) {
     colrank <- colvec[wr]
     c2 <- rgb(0,144,168,255,maxColorValue=255)
     if(input$show.ranking) {
-      x <- adjustcolor(colrank, alpha.f=0.9)
+      x <- adjustcolor(colrank, alpha.f=0.95)
     } else {
       x <- rep(c2,length(wr))
     }
