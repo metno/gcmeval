@@ -265,7 +265,9 @@ dashboardPage(
 	  h4("Data"),
           HTML("Global Climate Model (GCM) data:<br>"),
        	  a("Coupled Model Intercomparison Project Phase 5 (CMIP5)",
-       	    href = "https://esgf-node.llnl.gov/projects/cmip5/"),
+       	    href = "https://esgf-node.llnl.gov/projects/cmip5/"), br(),
+	  a("Coupled Model Intercomparison Project Phase 6 (CMIP6)",
+	    href="https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip6"),
        	  HTML("<br><br>Reference data:<br>"),
        	  a("ERA5", href = "https://www.ecmwf.int/en/forecasts/datasets/reanalysis-datasets/era5"),
        	   "(temperature and precipitation)", br(),
@@ -275,7 +277,7 @@ dashboardPage(
        	  "(precipitation)",
 	  h4("Source code"),
           HTML("The source code for this app is available at GitHub: "),
-          a("http://github.com/metno/DECM/.", href = "https://github.com/metno/DECM/")	  
+          a("http://github.com/metno/gcmeval/.", href = "https://github.com/metno/gcmeval/")	  
        	  )
         )
       ),

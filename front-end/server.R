@@ -227,23 +227,24 @@ shinyServer(function(input, output, session) {
 
   output$IntroText  <- renderText({
     paste("This is a tool to help you evaluate subsets of climate models from the CMIP5 and CMIP6 ensembles.<br><br>",
-          "Step 1) In the <i>'Settings for skill evaluation'</i> menu, select two focus regions ",
+          "Step 1) Select which emission scenarios to include in the base ensemble in the <i>'Model Selection'</i> menu.<br><br>", 
+          "Step 2) In <i>'Settings for skill evaluation'</i>, select two focus regions ",
           "and set the weights for the regions and various meteorological parameters (temperature and precipitation at the moment), ",
 	  "seasons, and skill scores. Based on your choices, a weighted <b>model skill evaluation</b> is performed and ",
           "the climate models are ranked according to their representation of the climate of the past. ",
 	  "Note that small changes in weights and regions can significantly change the ranking.<br><br>",
-          "Step 2) In the <i>'Settings for scatterplots'</i> menu, select a season, time horizon, and emission scenario for the",
+          "Step 3) In <i>'Settings for scatterplots'</i>, select a season, time horizon, and emission scenario for the",
           "scatterplots which show the <b>spread of the regional mean climate change</b> among the models. ",
 	  "Now study the scatterplots to evaluate how well the selected subset represents the full CMIP5 and/or CMIP6 ensemble. ",
 	  "You can also show the model ranking as a color scale (tick the box above the first scatterplot!). ",
 	  "Some additional information will be provided when you hover over the points.<br><br>",
-          "Step 3) You can change the subset of models in the <i>'Model Selection'</i> menu ",
+          "Step 4) You can change the subset of models in <i>'Model Selection'</i> ",
 	  "or add them by clicking the corresponding points in the scatterplots (doesn't work on mobile phones).",
 	  "Our suggested approach if you are picking a subset of models is to exclude climate models that represent the climate of the past very poorly, ",
 	  "and try to find a subset out of the well performing models that preserves the statistical characteristics ",
 	  "(e.g., spread and mean) of climate change of the full ensemble.<br><br>",
 	  "In <i>'Model selection'</i> you can further define the ensemble size and select the top ranked or a random set of GCMs.<br>",
-	  "The <i>'Advanced settings'</i> let you choose the reference data sets and define the base ensemble.")
+	  "The <i>'Advanced settings'</i> let you choose the reference data sets and exclude specific models from the base ensemble.")
   })
   
   output$DisclaimerText <- renderText({
