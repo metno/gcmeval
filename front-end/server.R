@@ -1,5 +1,3 @@
-## Load libraries and define functions: 
-source("global.R")
 
 ## Define a server for the Shiny app
 shinyServer(function(input, output, session) {
@@ -117,7 +115,6 @@ shinyServer(function(input, output, session) {
     wrmax <- sort(wr[!duplicated(wr)])[input$ngcm]
     i.best <- which(wr<=wrmax & !duplicated(wr))
     return(i.best)
-    #order(weightedrank())[1:input$ngcm]
   })
 
   ## Temperature and precip. spread for scatterplot
@@ -177,12 +174,10 @@ shinyServer(function(input, output, session) {
       wr <- weightedrank()[imSelected()]
       wr <- wr[!duplicated(gcms)]
       gcms <- gcms[!duplicated(gcms)]
-      wr <- sapply(wr, pad, width=3)
-      Z <- cbind(gcms,wr)
+      Z <- data.frame(gcms, wr)
     } else {
-      Z <- cbind("no selected models","-")
+      Z <- data.frame("no selected models","-")
     }
-    Z <- as.data.frame(Z)
     colnames(Z) <- c("Model name","Rank")
     return(Z)
   })
@@ -192,9 +187,7 @@ shinyServer(function(input, output, session) {
     wr <- weightedrank()[best()]
     wr <- wr[!duplicated(gcms)]
     gcms <- gcms[!duplicated(gcms)]
-    wr <- sapply(wr, pad, width=3)
-    Z <- cbind(gcms,wr)
-    Z <- as.data.frame(Z)
+    Z <- data.frame(gcms, wr)
     colnames(Z) <- c("Model name","Rank")
     return(Z)
   })
@@ -204,9 +197,7 @@ shinyServer(function(input, output, session) {
     wr <- weightedrank()
     wr <- wr[!duplicated(gcms)]
     gcms <- gcms[!duplicated(gcms)]
-    wr <- sapply(wr, pad, width=3)
-    Z <- cbind(gcms,wr)
-    Z <- as.data.frame(Z)
+    Z <- data.frame(gcms, wr)
     colnames(Z) <- c("Model name","Rank")
     return(Z)
   })
@@ -403,7 +394,7 @@ shinyServer(function(input, output, session) {
     colrank <- colvec[wr]
     c1 <- rgb(116,196,215,150,maxColorValue=255)
     if(input$show.ranking) {
-      x <- adjustcolor(colrank, alpha.f=0.7)
+      x <- adjustcolor(colrank, alpha.f=0.8)
     } else {
       x <- rep(c1,length(wr))
     }
@@ -448,12 +439,12 @@ shinyServer(function(input, output, session) {
     ggplotly(qplot(1:10))
   })
   
-  observeEvent(input$download1, {
-    filename <- paste("gcmeval",gsub("[::punct::]","",gsub(".*\\[|\\].*","",input$regionwm1)),
-                      clean(input$season),clean(paste(input$rcp,collapse="")),
-                      gsub("[0-9]","",clean(input$period)),"png",sep=".")
-    orca(dtdpr1(), file=filename, scale=3, width=1000, height=700)
-  })
+  #observeEvent(input$download1, {
+  #  filename <- paste("gcmeval",gsub("[::punct::]","",gsub(".*\\[|\\].*","",input$regionwm1)),
+  #                    clean(input$season),clean(paste(input$rcp,collapse="")),
+  #                    gsub("[0-9]","",clean(input$period)),"png",sep=".")
+  #  orca(dtdpr1(), file=filename, scale=3, width=1000, height=700)
+  #})
   
   # Region 1
   output$dtdpr1 <- renderPlotly({
@@ -492,6 +483,18 @@ shinyServer(function(input, output, session) {
               name="mean of selection", text="mean of selection",
               marker=list(symbol='star', color='red', size=10,
                           line=list(color='black', width=1))) %>%
+    add_trace(x=mean(dtas1()[im.rcp45]), y=mean(dpr1()[im.rcp45]), 
+              name="mean of RCP4.5", text="mean of RCP4.5",
+              marker=list(symbol='circle', color='black', size=10,
+                          line=list(color='black', width=0.1))) %>%
+    add_trace(x=mean(dtas1()[im.rcp85]), y=mean(dpr1()[im.rcp85]), 
+              name="mean of RCP8.5", text="mean of RCP8.5",
+              marker=list(symbol='diamond', color='black', size=10,
+                          line=list(color='black', width=0.1))) %>%
+    add_trace(x=mean(dtas1()[im.ssp585]), y=mean(dpr1()[im.ssp585]), 
+              name="mean of SSP585", text="mean of SSP585",
+              marker=list(symbol='cross', color='black', size=10,
+                          line=list(color='black', width=0.1))) %>%
     layout(p, font=list(size=15),
            xaxis=list(title="Temperature change (deg C)",range=input$xlim),
            yaxis=list(title="Precipitation change (mm/day)",range=input$ylim),
@@ -504,12 +507,12 @@ shinyServer(function(input, output, session) {
 				align="left")) %>% event_register("plotly_click")
   })
   
-  observeEvent(input$download2, {
-    filename <- paste("gcmeval",gsub("[::punct::]","",gsub(".*\\[|\\].*","",input$regionwm2)),
-                      clean(input$season),clean(paste(input$rcp,collapse="")),
-                      gsub("[0-9]","",clean(input$period)),"png",sep=".")
-    orca(dtdpr2(), file=filename, scale=3, width=1000, height=700)
-  })
+  #observeEvent(input$download2, {
+  #  filename <- paste("gcmeval",gsub("[::punct::]","",gsub(".*\\[|\\].*","",input$regionwm2)),
+  #                    clean(input$season),clean(paste(input$rcp,collapse="")),
+  #                    gsub("[0-9]","",clean(input$period)),"png",sep=".")
+  #  orca(dtdpr2(), file=filename, scale=3, width=1000, height=700)
+  #})
   
   # Region 1
   output$dtdpr2 <- renderPlotly({
@@ -542,6 +545,18 @@ shinyServer(function(input, output, session) {
                 name="mean of selection", text="mean of selection",
                 marker=list(symbol='star', color='red', size=10,
                             line=list(color='black', width=1))) %>%
+      add_trace(x=mean(dtas2()[im.rcp45]), y=mean(dpr2()[im.rcp45]), 
+                name="mean of RCP4.5", text="mean of RCP4.5",
+                marker=list(symbol='circle', color='black', size=10,
+                          line=list(color='black', width=0.1))) %>%
+      add_trace(x=mean(dtas2()[im.rcp85]), y=mean(dpr2()[im.rcp85]), 
+                name="mean of RCP8.5", text="mean of RCP8.5",
+                marker=list(symbol='diamond', color='black', size=10,
+                          line=list(color='black', width=0.1))) %>%
+      add_trace(x=mean(dtas2()[im.ssp585]), y=mean(dpr2()[im.ssp585]), 
+                name="mean of SSP585", text="mean of SSP585",
+                marker=list(symbol='cross', color='black', size=10,
+                          line=list(color='black', width=0.1))) %>%			    
       layout(p, font=list(size=15),
              xaxis=list(title="Temperature change (deg C)",range=input$xlim),
              yaxis=list(title="Precipitation change (mm/day)",range=input$ylim),

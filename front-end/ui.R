@@ -341,8 +341,8 @@ dashboardPage(
               collapsed = FALSE,
               br(),
               plotlyOutput("dtdpr1", width = '100%', height = 550),
-              br(),
-              actionButton("download1", label = "Download figure", width = '150px'),
+              #br(),
+              #actionButton("download1", label = "Download figure", width = '150px'),
               br()
           ),
             box(
@@ -354,8 +354,8 @@ dashboardPage(
               collapsed = FALSE,
               br(),
               plotlyOutput("dtdpr2", width = '100%', height = 550),
-              br(),
-              actionButton("download2", label = "Download figure", width = '150px'),
+              #br(),
+              #actionButton("download2", label = "Download figure", width = '150px'),
               br()
             )
         )
