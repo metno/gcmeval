@@ -214,13 +214,13 @@ dashboardPage(
                           min = -20, 
                           max = 20,
                           step = 0.25,
-                          value = c(-15,15)),
+                          value = c(-3,15)),
               sliderInput("ylim", 
                           label = "Precipitation range",
                           min = -4, 
                           max = 4,
-                          step = 0.2,
-                          value = c(-1.5,1.5))
+                          step = 0.25,
+                          value = c(-0.5,1))
       ),
       menuItem("Advanced settings", tabName="advanced", icon=icon("cog"),
                selectInput(

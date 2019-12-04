@@ -496,15 +496,17 @@ shinyServer(function(input, output, session) {
               marker=list(symbol='cross', color='black', size=10,
                           line=list(color='black', width=0.1))) %>%
     layout(p, font=list(size=15),
-           xaxis=list(title="Temperature change (deg C)",range=input$xlim),
-           yaxis=list(title="Precipitation change (mm/day)",range=input$ylim),
+           xaxis=list(title="Temperature change (deg C)",range=input$xlim,
+	              zerolinecolor="#bdbdbd", zerolinewidth=1),
+           yaxis=list(title="Precipitation change (mm/day)",range=input$ylim,
+	              zerolinecolor="#bdbdbd", zerolinewidth=1),
            showlegend=TRUE, 
            legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=4),
 	   annotations = list(yref="paper", xref="paper", y=1.07, x=0.02,
-                                text=paste(paste0(input$season," climate change in ",input$regionwm1,
-                                "\nPresent day (1981-2010) to ",tolower(input$period))),
-                                showarrow=FALSE, font=list(size=15,color = 'grey'),
-				align="left")) %>% event_register("plotly_click")
+                              text=paste(paste0(input$season," climate change in ",input$regionwm1,
+                              "\nPresent day (1981-2010) to ",tolower(input$period))),
+                              showarrow=FALSE, font=list(size=15,color = 'grey'),
+	   		align="left")) %>% event_register("plotly_click")
   })
   
   #observeEvent(input$download2, {
@@ -558,8 +560,10 @@ shinyServer(function(input, output, session) {
                 marker=list(symbol='cross', color='black', size=10,
                           line=list(color='black', width=0.1))) %>%			    
       layout(p, font=list(size=15),
-             xaxis=list(title="Temperature change (deg C)",range=input$xlim),
-             yaxis=list(title="Precipitation change (mm/day)",range=input$ylim),
+             xaxis=list(title="Temperature change (deg C)",range=input$xlim,
+	                zerolinecolor="#bdbdbd", zerolinewidth=1),
+             yaxis=list(title="Precipitation change (mm/day)",range=input$ylim,
+	                zerolinecolor="#bdbdbd", zerolinewidth=1),
              showlegend=TRUE, 
              legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=4),
 	     annotations = list(yref="paper", xref="paper", y=1.07, x=0.02,
