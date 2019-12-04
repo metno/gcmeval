@@ -216,15 +216,11 @@ shinyServer(function(input, output, session) {
     colnames(Z) <- c("Parameter","Weight")
     return(Z)
   })
+
   ## Calculations used for text colors
-  weightedrankMean <- reactive({mean(weightedrank(),na.rm=TRUE)})
-  
-  #legcolsrank <- two.colors(n=107,start="green",end="red",middle = "orange") #colors for ranks
-  legcolsrank <- colorRampPalette(rev(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26")))(107)
-  meanRelMetricsIndx <- reactive({as.integer(weightedrankMean())}) #color index based on weighted rank
-  
   #legcols <- two.colors(n=11,start="red",end="green",middle = "orange") #colors for percentage number
-  legcols <- colorRampPalette(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26"))(11)
+  #legcols <- colorRampPalette(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26"))(11)
+  legcols <- rep("#2c7fb8",11)
 
   # Color list for summary boxes 
   colorlist <- c("red","orange","yellow","lime","green")
@@ -438,24 +434,16 @@ shinyServer(function(input, output, session) {
   myPlotlyGraph <- reactive({
     ggplotly(qplot(1:10))
   })
-  
-  #observeEvent(input$download1, {
-  #  filename <- paste("gcmeval",gsub("[::punct::]","",gsub(".*\\[|\\].*","",input$regionwm1)),
-  #                    clean(input$season),clean(paste(input$rcp,collapse="")),
-  #                    gsub("[0-9]","",clean(input$period)),"png",sep=".")
-  #  orca(dtdpr1(), file=filename, scale=3, width=1000, height=700)
-  #})
-  
-  # Region 1
-  output$dtdpr1 <- renderPlotly({
-    dtdpr1()
-  })
-
+    
   plab <- reactive({
     x <- gcmlabel(names(dtas1()))
     y <- paste0(x$gcm,".",x$rip," (",toupper(x$cmip)," ",toupper(x$exp),")",
                 "\nWeighted rank: ",weightedrank())
     return(y)
+  })
+
+  output$dtdpr1 <- renderPlotly({
+    dtdpr1()
   })
     
   dtdpr1 <- reactive({
@@ -509,18 +497,11 @@ shinyServer(function(input, output, session) {
 	   		align="left")) %>% event_register("plotly_click")
   })
   
-  #observeEvent(input$download2, {
-  #  filename <- paste("gcmeval",gsub("[::punct::]","",gsub(".*\\[|\\].*","",input$regionwm2)),
-  #                    clean(input$season),clean(paste(input$rcp,collapse="")),
-  #                    gsub("[0-9]","",clean(input$period)),"png",sep=".")
-  #  orca(dtdpr2(), file=filename, scale=3, width=1000, height=700)
-  #})
-  
-  # Region 1
   output$dtdpr2 <- renderPlotly({
     dtdpr2()
   })
-  
+
+
   # Region 2
   dtdpr2 <- reactive({
     x <- gcmlabel(names(dtas1()))
