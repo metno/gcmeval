@@ -389,8 +389,8 @@ shinyServer(function(input, output, session) {
   
   clr1 <- reactive({
     wr <- weightedrank()
-    #colvec <- two.colors(n=length(wr), start="green", end="red", middle="orange")
-    colvec <- colorRampPalette(rev(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26")))(length(wr))
+    #colvec <- two.colors(n=max(wr), start="green", end="red", middle="orange")
+    colvec <- colorRampPalette(rev(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26")))(max(wr))
     colrank <- colvec[wr]
     c1 <- rgb(116,196,215,150,maxColorValue=255)
     if(input$show.ranking) {
@@ -403,8 +403,8 @@ shinyServer(function(input, output, session) {
   
   clr2 <- reactive({
     wr <- weightedrank()
-    #colvec <- two.colors(n=length(wr), start="green", end="red", middle="orange")
-    colvec <- colorRampPalette(rev(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26")))(length(wr))
+    #colvec <- two.colors(n=max(wr), start="green", end="red", middle="orange")
+    colvec <- colorRampPalette(rev(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26")))(max(wr))
     colrank <- colvec[wr]
     c2 <- rgb(0,144,168,255,maxColorValue=255)
     if(input$show.ranking) {
