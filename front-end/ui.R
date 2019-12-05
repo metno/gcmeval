@@ -278,7 +278,6 @@ dashboardPage(
 	  h4("Source code"),
           HTML("The source code for this app is available at GitHub: "),
           a("http://github.com/metno/gcmeval/.", href = "https://github.com/metno/gcmeval/")	  
-       	  )
         )
       ),
       column(
@@ -356,7 +355,23 @@ dashboardPage(
               plotlyOutput("dtdpr2", width = '100%', height = 550),
               br()
             )
-        )
+          )
+        ),
+        column(12,
+          box(
+	    label="contact",
+	    width='100%',
+	    title=HTML("<font size=+1.2 color='black'><b>Contact us</b></font>"),
+	    collapsible=TRUE,
+	    collapsed=TRUE,
+	    "kajsa.parding[at]met.no",
+	    #textInput("name", "Name:", ""),
+	    #textInput("email", "E-mail:", ""),
+	    #textInput("org", "Organization:", ""),
+            #textInput("body", "Message:", ""),
+            #actionButton("goButton",label = "Send")
+          )
+        )        
       )
     )
   )

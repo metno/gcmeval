@@ -68,6 +68,14 @@ clean <- function(x) {
   gsub("[[:punct:]]|[[:space:]]","",tolower(x))
 }
 
+contactus <- function(name="", org="", from="", to="", body="") {
+  if(nchar(msg)>0 & nchar(to)>0) {
+    subject <- paste("New comment from",name)
+    mailControl=list(smtpServer="serverinfo")
+    sendmailR::sendmail(from=from,to=to,subject=subject,msg=body,control=mailControl)
+  }
+}
+
 period2label <- function(x="period.1981_2010") {
   plab <- switch(x, "period.1981_2010"="present",
                  "period.2071_2100"="ff",

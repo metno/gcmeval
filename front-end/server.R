@@ -670,5 +670,19 @@ shinyServer(function(input, output, session) {
     updateCheckboxGroupInput(session, inputId = "gcms", choices = choices, 
                              selected = selected)
   })
+
+  # Contact us - send email
+  observeEvent(input$goButton, {
+    if(input$goButton==0) {
+      return(NULL)
+    } else {
+      ## Use isolate to avoid dependency on input$goButton?
+      #isolate({
+      #  contactus(name=input$name, org=input$org, from=input$email,
+      #	          to="kajsamp@met.no", body=input$body)
+      #})
+      return(NULL)
+    }
+  })
   
 })
