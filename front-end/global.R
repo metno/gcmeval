@@ -70,9 +70,8 @@ clean <- function(x) {
 
 contactus <- function(name="", org="", from="", to="", body="") {
   if(nchar(body)>0 & nchar(to)>0) {
-    subject <- paste("New GCMeval comment from",name)
-    system.command <- paste0('echo "',body,'" | mail -s "',subject,
-                             '" -a "From: ',from,'" ',to)
+    subject <- paste0("New GCMeval comment from ",name," <",from,">")
+    system.command <- paste0('echo "',body,'" | mail -s "',subject,'" ',to)
     system(system.command, wait=TRUE)
   }
 }

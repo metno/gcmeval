@@ -364,16 +364,16 @@ dashboardPage(
 	    title=HTML("<font size=+1.2 color='black'><b>Contact us</b></font>"),
 	    collapsible=TRUE,
 	    collapsed=TRUE,
-	    HTML("<b>kajsa.parding@met.no</b>"),
+	    #HTML("<b>kajsa.parding@met.no</b>"),
 	    ## Replace email adress above with the following if a Mail Transfer Agent
 	    ## has been installed and configured (e.g., postfix) and mailutils has been installed.
 	    ## The email adress that receives the comments can be changed on line 679 in server.R
-	    #textInput("name", "Name:", ""),
-	    #textInput("email", "E-mail:", ""),
-	    #textInput("org", "Organization:", ""),
-            #textInput("body", "Message:", ""),
-	    #tags$head(tags$script(src="message-handler.js")),
-            #actionButton("goButton",label = "Send")
+	    textInput("name", "Your name:", ""),
+	    textInput("email", "Your e-mail:", ""),
+	    textInput("org", "Organization:", ""),
+            textInput("body", "Message:", ""),
+	    tags$head(tags$script(src="message-handler.js")),
+            actionButton("goButton",label = "Send")
           )
         )        
       )
