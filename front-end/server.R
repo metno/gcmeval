@@ -676,12 +676,8 @@ shinyServer(function(input, output, session) {
     if(input$goButton==0) {
       return(NULL)
     } else {
-      ## Use isolate to avoid dependency on input$goButton?
-      #isolate({
-      #  contactus(name=input$name, org=input$org, from=input$email,
-      #	          to="kajsamp@met.no", body=input$body)
-      #})
-      return(NULL)
+      contactus(name=input$name, org=input$org, from=input$email,
+                to="kajsamp@met.no", body=input$body)
     }
   })
   

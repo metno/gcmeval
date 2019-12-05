@@ -69,10 +69,11 @@ clean <- function(x) {
 }
 
 contactus <- function(name="", org="", from="", to="", body="") {
-  if(nchar(msg)>0 & nchar(to)>0) {
+  if(nchar(body)>0 & nchar(to)>0) {
     subject <- paste("New comment from",name)
-    mailControl=list(smtpServer="serverinfo")
-    sendmailR::sendmail(from=from,to=to,subject=subject,msg=body,control=mailControl)
+    system.command <- paste0('echo "',body,'" | mail -s "',subject,
+                             '" -a "From: ',from,'" ',to)
+    system(system.command, wait=TRUE)
   }
 }
 
