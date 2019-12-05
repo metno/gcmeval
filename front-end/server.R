@@ -676,8 +676,12 @@ shinyServer(function(input, output, session) {
     if(input$goButton==0) {
       return(NULL)
     } else {
-      contactus(name=input$name, org=input$org, from=input$email,
-                to="kajsamp@met.no", body=input$body)
+      isolate({
+        contactus(name=input$name, org=input$org, from=input$email,
+                  to="kajsamp@met.no", body=input$body)
+      })
+      session$sendCustomMessage(type = 'testmessage',
+        message = 'Thank you for your comment!')
     }
   })
   

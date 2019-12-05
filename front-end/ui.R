@@ -365,13 +365,14 @@ dashboardPage(
 	    collapsible=TRUE,
 	    collapsed=TRUE,
 	    HTML("<b>kajsa.parding@met.no</b>"),
-	    ## Replace email adress above with the following if a Mail Transfer Agent has been installed and configured
-	    ## (e.g., https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-on-ubuntu-18-04)
-	    ## and mailutils has been installed. The email adress that receives the comments can be changed on line 679 in server.R
+	    ## Replace email adress above with the following if a Mail Transfer Agent
+	    ## has been installed and configured (e.g., postfix) and mailutils has been installed.
+	    ## The email adress that receives the comments can be changed on line 679 in server.R
 	    #textInput("name", "Name:", ""),
 	    #textInput("email", "E-mail:", ""),
 	    #textInput("org", "Organization:", ""),
             #textInput("body", "Message:", ""),
+	    #tags$head(tags$script(src="message-handler.js")),
             #actionButton("goButton",label = "Send")
           )
         )        
