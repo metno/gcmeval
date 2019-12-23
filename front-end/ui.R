@@ -218,6 +218,9 @@ dashboardPage(
                             label = "Best", 
                             width = '150px'
                ),
+               actionButton("deselect",
+                            label = "Deselect all",
+                            width = '150px'),
                checkboxGroupInput("gcms",
                                   label = "Climate models",
                                   choices = gcmnames.all[["rcp45"]],

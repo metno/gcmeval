@@ -445,7 +445,7 @@ shinyServer(function(input, output, session) {
       y[exp=="rcp45"] <- colorlist[[1]]
       y[exp=="rcp85"] <- colorlist[[2]]
       y[exp=="ssp585"] <- colorlist[[3]]
-      y[imSelected()] <- colorlist[[4]]
+      #y[imSelected()] <- colorlist[[4]]
       x <- adjustcolor(y, alpha.f=0.7)
     }
     return(x)
@@ -522,22 +522,29 @@ shinyServer(function(input, output, session) {
       }
     }
     if(show.distribution) {
-      px <- plot_ly(x=dtas1()[imSelected()], type="box", color=I(colorlist[[4]]), 
-                    line=list(color="black"), showlegend=FALSE, boxmean=TRUE, name="selected models") %>%
-          add_trace(x=dtas1()[im.rcp45], type="box", color=I(colorlist[[1]]), 
-                    line=list(color=colorlist[[1]]), boxmean=TRUE, name="RCP4.5") %>%
-          add_trace(x=dtas1()[im.rcp85], type="box", color=I(colorlist[[2]]), 
-                    line=list(color=colorlist[[2]]), boxmean=TRUE, name="RCP8.5") %>%
-          add_trace(x=dtas1()[im.ssp585], type="box", color=I(colorlist[[3]]), 
-                    line=list(color=colorlist[[3]]), boxmean=TRUE, name="SSP5 8.5")
-      py <- plot_ly(y=dpr1()[imSelected()], type="box", color=I(colorlist[[4]]), 
-                    line=list(color="black"), showlegend=FALSE, boxmean=TRUE, name="selected models") %>% 
-          add_trace(y=dpr1()[im.rcp45], type="box", color=I(colorlist[[1]]), 
-                    line=list(color=colorlist[[1]]), boxmean=TRUE, name="RCP4.5") %>%
-          add_trace(y=dpr1()[im.rcp85], type="box", color=I(colorlist[[2]]), 
-                    line=list(color=colorlist[[2]]), boxmean=TRUE, name="RCP8.5") %>%
-          add_trace(y=dpr1()[im.ssp585], type="box", color=I(colorlist[[3]]), 
-                    line=list(color=colorlist[[3]]), boxmean=TRUE, name="SSP5 8.5")
+      im.list <- list(imSelected(), im.rcp45, im.rcp85, im.ssp585)
+      clr.list <- list(colorlist[[4]], colorlist[[1]], colorlist[[2]], colorlist[[3]])
+      ln.list <- list("black", colorlist[[1]], colorlist[[2]], colorlist[[3]])
+      nm.list <- list("selected models", "RCP4.5", "RCP8.5", "SSP5 8.5")
+      ivec <- which(sapply(im.list, function(x) sum(x)>0))
+      px <- NULL
+      py <- NULL
+      for(i in ivec) {
+        if(is.null(px)) {
+          px <- plot_ly(x=dtas1()[im.list[[i]]], type="box", color=I(clr.list[[i]]), 
+              line=list(color=ln.list[[i]]), showlegend=FALSE, boxmean=TRUE, name=nm.list[[i]])
+        } else {
+          px <- px %>% add_trace(x=dtas1()[im.list[[i]]], type="box", color=I(clr.list[[i]]), 
+              line=list(color=ln.list[[i]]), showlegend=FALSE, boxmean=TRUE, name=nm.list[[i]])
+        }
+        if(is.null(py)) {
+          py <- plot_ly(y=dpr1()[im.list[[i]]], type="box", color=I(clr.list[[i]]), 
+              line=list(color=ln.list[[i]]), showlegend=FALSE, boxmean=TRUE, name=nm.list[[i]])          
+        } else {
+          py <- py %>% add_trace(y=dpr1()[im.list[[i]]], type="box", color=I(clr.list[[i]]), 
+              line=list(color=ln.list[[i]]), showlegend=FALSE, boxmean=TRUE, name=nm.list[[i]])          
+        }
+      }
     }
     pscatter <- plot_ly(data.frame(x=dtas1()[im.rcp45],y=dpr1()[im.rcp45]), x=~x, y=~y, type="scatter", mode="markers",
                         marker=list(color=clr1()[im.rcp45], size=sz()[im.rcp45], symbol="circle", 
@@ -590,22 +597,29 @@ shinyServer(function(input, output, session) {
       }
     }
     if(show.distribution) {
-      px <- plot_ly(x=dtas2()[imSelected()], type="box", color=I(colorlist[[4]]), 
-                    line=list(color="black"), showlegend=FALSE, boxmean=TRUE, name="selected models") %>%
-        add_trace(x=dtas2()[im.rcp45], type="box", color=I(colorlist[[1]]), 
-                  line=list(color=colorlist[[1]]), boxmean=TRUE, name="RCP4.5") %>%
-        add_trace(x=dtas2()[im.rcp85], type="box", color=I(colorlist[[2]]), 
-                  line=list(color=colorlist[[2]]), boxmean=TRUE, name="RCP8.5") %>%
-        add_trace(x=dtas2()[im.ssp585], type="box", color=I(colorlist[[3]]), 
-                  line=list(color=colorlist[[3]]), boxmean=TRUE, name="SSP5 8.5")
-      py <- plot_ly(y=dpr2()[imSelected()], type="box", color=I(colorlist[[4]]), 
-                    line=list(color="black"), showlegend=FALSE, boxmean=TRUE, name="selected models") %>% 
-        add_trace(y=dpr2()[im.rcp45], type="box", color=I(colorlist[[1]]), 
-                  line=list(color=colorlist[[1]]), boxmean=TRUE, name="RCP4.5") %>%
-        add_trace(y=dpr2()[im.rcp85], type="box", color=I(colorlist[[2]]), 
-                  line=list(color=colorlist[[2]]), boxmean=TRUE, name="RCP8.5") %>%
-        add_trace(y=dpr2()[im.ssp585], type="box", color=I(colorlist[[3]]), 
-                  line=list(color=colorlist[[3]]), boxmean=TRUE, name="SSP5 8.5")
+      im.list <- list(imSelected(), im.rcp45, im.rcp85, im.ssp585)
+      clr.list <- list(colorlist[[4]], colorlist[[1]], colorlist[[2]], colorlist[[3]])
+      ln.list <- list("black", colorlist[[1]], colorlist[[2]], colorlist[[3]])
+      nm.list <- list("selected models", "RCP4.5", "RCP8.5", "SSP5 8.5")
+      ivec <- which(sapply(im.list, function(x) sum(x)>0))
+      px <- NULL
+      py <- NULL
+      for(i in ivec) {
+        if(is.null(px)) {
+          px <- plot_ly(x=dtas2()[im.list[[i]]], type="box", color=I(clr.list[[i]]), 
+                        line=list(color=ln.list[[i]]), showlegend=FALSE, boxmean=TRUE, name=nm.list[[i]])
+        } else {
+          px <- px %>% add_trace(x=dtas2()[im.list[[i]]], type="box", color=I(clr.list[[i]]), 
+                                 line=list(color=ln.list[[i]]), showlegend=FALSE, boxmean=TRUE, name=nm.list[[i]])
+        }
+        if(is.null(py)) {
+          py <- plot_ly(y=dpr2()[im.list[[i]]], type="box", color=I(clr.list[[i]]), 
+                        line=list(color=ln.list[[i]]), showlegend=FALSE, boxmean=TRUE, name=nm.list[[i]])          
+        } else {
+          py <- py %>% add_trace(y=dpr2()[im.list[[i]]], type="box", color=I(clr.list[[i]]), 
+                                 line=list(color=ln.list[[i]]), showlegend=FALSE, boxmean=TRUE, name=nm.list[[i]])          
+        }
+      }
     }
     pscatter <- plot_ly(data.frame(x=dtas2()[im.rcp45],y=dpr2()[im.rcp45]), x=~x, y=~y, type="scatter", mode="markers",
                         marker=list(color=clr1()[im.rcp45], size=sz()[im.rcp45], symbol="circle", 
@@ -740,15 +754,15 @@ shinyServer(function(input, output, session) {
                              selected = selected)
   })
   
-  # When clicking 'random' button, select random GCMs
-  observeEvent(input$first, {
+  # When clicking 'deselect' button, deselect all GCMs
+  observeEvent(input$deselect, {
     #x <- gcmlabel(gcmst())
     #i <- x$exp %in% clean(input$rcp)
     #choices <- paste(x$cmip[i],x$gcm[i],x$rip[i],sep=".")
     choices <- gcmnamesRanks()
     choices <- choices[!duplicated(choices)]
-    selected <- choices[1:min(input$ngcm,length(choices))]
-    updateCheckboxGroupInput(session, inputId = "gcms", choices = choices, 
+    selected <- NULL
+    updateCheckboxGroupInput(session, inputId = "gcms", choices = choices,
                              selected = selected)
   })
   
