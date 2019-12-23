@@ -360,12 +360,12 @@ shinyServer(function(input, output, session) {
   })
   
   Labeldtdpr1 <- reactive({
-    paste(paste0(input$season," climate change in ",Region1(),"<br>",
+    paste(paste0(input$season," climate change in ",input$regionwm1,"<br>",
                  "Present day (1981-2010) to ",tolower(input$period)))
   })
   
   Labeldtdpr2 <- reactive({
-    paste(paste0(input$season," climate change in ",Region2(),"<br>",
+    paste(paste0(input$season," climate change in ",input$regionwm2,"<br>",
                  "Present day (1981-2010) to ",tolower(input$period)))
   })
   
