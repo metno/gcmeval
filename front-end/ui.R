@@ -7,17 +7,37 @@ dashboardPage(
   ),
   dashboardSidebar(
     sidebarMenu(width="120px",
-      menuItem("Settings for skill evaluation", tabName="rank", icon=NULL,
+            menuItem("Focus regions", tabName="rank", icon=NULL,
+                selectInput(
+                  "regionwm1", 
+                  label = "Primary focus region",
+                  choices = regionlist,
+                  selected = "Alaska/N.W. Canada [ALA:1]"
+                ),
+                br(),
+                plotOutput("mapm1", width = '100%', height = '130px'),
+                br(),
+                selectInput(
+                  "regionwm2", 
+                  label = "Primary focus region",
+                  choices = regionlist,
+                  selected = "global"
+                ),
+                br(),
+                plotOutput("mapm2", width = '100%', height = '130px'),
+                br()
+            ),
+            menuItem("Weights for skill evaluation", tabName="rank", icon=NULL,
                menuItem("Focus regions", tabName="regionwm", icon=NULL,
-                  selectInput(
-                    "regionwm1", 
-                    label = "Primary focus region",
-                    choices = regionlist,
-                    selected = "Alaska/N.W. Canada [ALA:1]"
-                  ),
+                  #selectInput(
+                  #  "regionwm1", 
+                  #  label = "Primary focus region",
+                  #  choices = regionlist,
+                  #  selected = "Alaska/N.W. Canada [ALA:1]"
+                  #),
                   selectInput(
                     "wmreg1",
-                    label = NULL,
+                    label = "Primary focus region",#NULL,
                     choices = c(
                       "Not considered (0)" = 0,
                       "Important (1)" = 1,
@@ -25,28 +45,28 @@ dashboardPage(
                     ),
                     selected = 2
                   ),
-                  br(),
-                  plotOutput("mapm1", width = '100%', height = '130px'),
-                  br(),
-                  selectInput(
-                    "regionwm2",
-                    label = "Secondary focus region",
-                    choices = regionlist,
-                    selected = "global"
-                  ),
+                  #br(),
+                  #plotOutput("mapm1", width = '100%', height = '130px'),
+                  #br(),
+                  #selectInput(
+                  #  "regionwm2",
+                  #  label = "Secondary focus region",
+                  #  choices = regionlist,
+                  #  selected = "global"
+                  #),
                   selectInput(
                     "wmreg2",
-                    label = NULL,
+                    label = "Secondary focus region",#NULL,
                     choices = c(
                       "Not considered (0)" = 0,
                       "Important (1)" = 1,
                       "Very important (2)" = 2
                     ),
                     selected = 1
-                  ),
-                  br(),
-                  plotOutput("mapm2", width = '100%', height = '130px'),
-                  br()
+                  )#,
+                  #br(),
+                  #plotOutput("mapm2", width = '100%', height = '130px'),
+                  #br()
               ),
               menuItem("Variables", tabName="varwm", icon=NULL,
                  selectInput(
@@ -192,7 +212,7 @@ dashboardPage(
                           step = 0.25,
                           value = c(-0.5,1))
       ),
-      menuItem("Model selection", tabName = "selection", icon=NULL, collapsed=FALSE, width='210px',
+      menuItem("Ensemble selection", tabName = "selection", icon=NULL, collapsed=FALSE, width='210px',
                checkboxGroupInput("rcp",
                  label = "Emission scenarios in base ensemble",
                  choiceNames = c("RCP4.5 (CMIP5)", "RCP8.5 (CMIP5)", "SSP5 8.5 (CMIP6)"),
@@ -262,13 +282,20 @@ dashboardPage(
       column(
         12,
         box(
-          title = HTML("<font size=+1.5 color='black'><b>Information</b></font>"),
+          title = HTML("<font size=+1.5 color='black'><b>Getting started</b></font>"),
           width = '100%' ,
           status = 'primary',
           collapsible = TRUE,
-          collapsed = TRUE,
-       	  h4("How do I use the GCMeval tool?"),
+          collapsed = FALSE,
+       	  #h4("How do I use the GCMeval tool?"),
        	  htmlOutput("IntroText"),
+          br(),
+          box(
+            title=HTML("<font size=+0>Additional information</font>"),
+            width = '100%' ,
+            status = 'info',
+            collapsible = TRUE,
+            collapsed = TRUE,
 	  h4("Data"),
           HTML("Global Climate Model (GCM) data:<br>"),
        	  a("Coupled Model Intercomparison Project Phase 5 (CMIP5)",
@@ -286,6 +313,7 @@ dashboardPage(
           HTML("The source code for this app is available at GitHub: "),
           a("http://github.com/metno/gcmeval/.", href = "https://github.com/metno/gcmeval/")	  
         )
+      )
       ),
       column(
         12,
@@ -394,26 +422,26 @@ dashboardPage(
               htmlOutput("SpreadText")
             )
           )
-        ),
-        column(12,
-          box(
-	    label="contact",
-	    width='100%',
-	    title=HTML("<font size=+1.2 color='black'><b>Contact us</b></font>"),
-	    collapsible=TRUE,
-	    collapsed=TRUE,
-	    #HTML("<b>kajsa.parding@met.no</b>"),
-	    ## Replace email adress above with the following if a Mail Transfer Agent
-	    ## has been installed and configured (e.g., postfix) and mailutils has been installed.
-	    ## The email adress that receives the comments can be changed on line 679 in server.R
-	    textInput("name", "Your name:", ""),
-	    textInput("email", "Your e-mail:", ""),
-	    textInput("org", "Organization:", ""),
-            textInput("body", "Message:", ""),
-	    tags$head(tags$script(src="message-handler.js")),
-            actionButton("goButton",label = "Send")
-          )
-        )        
+        )#,
+        #column(12,
+      #    box(
+	    #label="contact",
+	    #width='100%',
+	    #title=HTML("<font size=+1.2 color='black'><b>Contact us</b></font>"),
+	    #collapsible=TRUE,
+	    #collapsed=TRUE,
+	    ##HTML("<b>kajsa.parding@met.no</b>"),
+	    ### Replace email adress above with the following if a Mail Transfer Agent
+	    ### has been installed and configured (e.g., postfix) and mailutils has been installed.
+	    ### The email adress that receives the comments can be changed on line 679 in server.R
+	    #textInput("name", "Your name:", ""),
+	    #textInput("email", "Your e-mail:", ""),
+	    #textInput("org", "Organization:", ""),
+      #      textInput("body", "Message:", ""),
+	    #tags$head(tags$script(src="message-handler.js")),
+      #      actionButton("goButton",label = "Send")
+      #    )
+      #  )        
       )
     )
   )
