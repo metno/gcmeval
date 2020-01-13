@@ -12,7 +12,7 @@ dashboardPage(
                   "regionwm1", 
                   label = "Primary focus region",
                   choices = regionlist,
-                  selected = "Alaska/N.W. Canada [ALA:1]"
+                  selected = "North Europe [NEU:11]"
                 ),
                 br(),
                 plotOutput("mapm1", width = '100%', height = '130px'),
@@ -217,7 +217,7 @@ dashboardPage(
                  label = "Emission scenarios in base ensemble",
                  choiceNames = c("RCP4.5 (CMIP5)", "RCP8.5 (CMIP5)", "SSP5 8.5 (CMIP6)"),
                  choiceValues = c("rcp45", "rcp85", "ssp585"),
-                 selected = c("rcp45")
+                 selected = c("rcp85","ssp585")
                ),
                #selectInput("rcp",
                #            label = "Emission scenario",
