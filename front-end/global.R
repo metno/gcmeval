@@ -68,25 +68,13 @@ clean <- function(x) {
   gsub("[[:punct:]]|[[:space:]]","",tolower(x))
 }
 
-pad <- function(x, width=3, pad=" ", side="left") {
-  if(nchar(x)>=width) {
-    y <- x
-  } else {
-    if(side=="left") {
-      y <- paste0(paste(rep(pad, width-nchar(x)), collapse=""), x)
-    } else if(side=="right") {
-      y <- paste0(x, paste(rep(pad, width-nchar(x)), collapse=""))
-    } else {
-      n1 <- ceiling((width-nchar(x))/2)
-      n2 <- width - char(x) - n1
-      y <- paste0(paste(rep(pad, n1), collapse=""), x, 
-                  paste(rep(pad, n2), collapse=""))
-    }
+contactus <- function(name="", org="", from="", to="", body="") {
+  if(nchar(body)>0 & nchar(to)>0) {
+    subject <- paste0("New GCMeval comment from ",name," <",from,">")
+    system.command <- paste0('echo "',body,'" | mail -s "',subject,'" ',to)
+    system(system.command, wait=TRUE)
   }
-  return(y)
 }
-
-#gcm.i <- meta$gcm.i
 
 period2label <- function(x="period.1981_2010") {
   plab <- switch(x, "period.1981_2010"="present",
