@@ -253,17 +253,19 @@ shinyServer(function(input, output, session) {
     paste("GCMeval is a tool to help with evaluation of climate models from the CMIP5 and CMIP6 ensembles. ",
           "Our suggested approach when picking a subset of models is to exclude the worst performing climate models, ",
           "and try to preserve the statistical characteristics of climate change of the full ensemble.<br><br>",
-          "In <i>'Focus regions'</i>, you can pick the two regions of interest.<br><br>",
+          "In <i>'Focus regions'</i>, you can pick two regions of interest.<br><br>",
           "In <i>'Weights for skill evaluation'</i>, define the importance of the focus regions, ",
           "variables, seasons, and skill scores. Based on these choices, the climate models are ranked ",
           "according to their representation of the climate of the past.<br><br>",
           "In <i>'Settings for scatterplots'</i>, select a season and time horizon for the",
-          "scatterplots showing the spread of regional mean climate change among the models. ",
+          "scatterplots showing the spread of regional mean climate change among the models in the focus regions. ",
           "You can also include box plots of the base ensemble and a subset of models ",
           "and show the model ranking as a color scale (tick the boxes above the first scatterplot!).<br><br>",
-          "In <i>'Ensemble Selection'</i>, choose the emission scenario of the base ensemble.", 
-          "A subset of models can be selected manually by clicking the corresponding points in the scatterplots (doesn't work on mobile phones).<br><br>",
-          "The <i>'Advanced settings'</i> let you choose the reference data sets and exclude specific models from the base ensemble."
+          "In <i>'Ensemble Selection'</i>, choose the emission scenarios of the base ensemble.", 
+          "A subset of models can be selected manually by clicking the corresponding points in the scatterplots (doesn't work on mobile devices).<br><br>",
+          "The <i>'Advanced settings'</i> let you choose the reference data sets and exclude specific models from the base ensemble.<br><br>",
+          "You can click on +/- in the top right corner of the boxes to expand/collapse them.<br><br>",
+          "Reference: Parding et al., 2020: GCMeval - An interactive tool for evaluation and selection of climate model ensembles,<i> Climate Services</i>, submitted."
 )
    #paste("This is a tool to help you evaluate subsets of climate models from the CMIP5 and CMIP6 ensembles.<br><br>",
     #      "Step 1) Select which emission scenarios to include in the base ensemble in the <i>'Model Selection'</i> menu.<br><br>", 
@@ -577,10 +579,10 @@ shinyServer(function(input, output, session) {
                             size=sz()[imSelected()], symbol=smbl()[imSelected()], 
                             line=list(color="black", width=1.2))) %>%
       layout(p, font=list(size=15),
-             xaxis=list(title="Temperature change (deg C)",range=input$xlim,
-                        zerolinecolor="#bdbdbd", zerolinewidth=1),
+             xaxis=list(title="Temperature change (°C)",range=input$xlim,
+                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = TRUE),
              yaxis=list(title="Precipitation change (mm/day)",range=input$ylim,
-                        zerolinecolor="#bdbdbd", zerolinewidth=1),
+                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = TRUE),
              showlegend=TRUE, 
              legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=4))
     if(show.distribution) {
@@ -652,10 +654,10 @@ shinyServer(function(input, output, session) {
                             size=sz()[imSelected()], symbol=smbl()[imSelected()], 
                             line=list(color="black", width=1.2))) %>%
       layout(p, font=list(size=15),
-             xaxis=list(title="Temperature change (deg C)",range=input$xlim,
-                        zerolinecolor="#bdbdbd", zerolinewidth=1),
+             xaxis=list(title="Temperature change (°C)",range=input$xlim,
+                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = TRUE),
              yaxis=list(title="Precipitation change (mm/day)",range=input$ylim,
-                        zerolinecolor="#bdbdbd", zerolinewidth=1),
+                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = TRUE),
              showlegend=TRUE, 
              legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=4))
     if(show.distribution) {
