@@ -243,8 +243,8 @@ dashboardPage(
                             width = '150px'),
                checkboxGroupInput("gcms",
                                   label = "Climate models",
-                                  choices = gcmnames.all[["rcp45"]],
-                                  selected = gcmnames.all[["rcp45"]][1:10],
+                                  choices = gcmnames.all[["rcp85"]],
+                                  selected = gcmnames.all[["rcp85"]][1:10],
                                   inline=TRUE,
                                   width='100%'
                )
@@ -291,12 +291,12 @@ dashboardPage(
        	  htmlOutput("IntroText"),
           br(),
           box(
-            title=HTML("<font size=+0>Additional information</font>"),
+            title=HTML("<font size=+0>Data and source code</font>"),
             width = '100%' ,
             status = 'info',
             collapsible = TRUE,
             collapsed = TRUE,
-	  h4("Data"),
+	  #h4("Data"),
           HTML("Global Climate Model (GCM) data:<br>"),
        	  a("Coupled Model Intercomparison Project Phase 5 (CMIP5)",
        	    href = "https://esgf-node.llnl.gov/projects/cmip5/"), br(),
@@ -309,7 +309,8 @@ dashboardPage(
        	  "(temperature and precipitation)", br(),
        	  a("GPCP v2.3", href = "https://www.esrl.noaa.gov/psd/data/gridded/data.gpcp.html"),
        	  "(precipitation)",
-	  h4("Source code"),
+	  br(),
+	  #h4("Source code"),
           HTML("The source code for this app is available at GitHub: "),
           a("http://github.com/metno/gcmeval/.", href = "https://github.com/metno/gcmeval/")	  
         )
