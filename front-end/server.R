@@ -5,7 +5,7 @@ shinyServer(function(input, output, session) {
   stats <- reactive({
     Y <- list()
     for(var in names(stats.all)) {
-      for(rcp in input$rcp) { #c("rcp45","rcp85","ssp585")) {
+      for(rcp in input$rcp) {
         X <- stats.all[[var]][[clean(rcp)]]
         for(period in names(X)) {
           plab <- period2label(period)
@@ -69,27 +69,11 @@ shinyServer(function(input, output, session) {
 
   ## Weighted rank calculations
   tasRanks <- reactive({
-    #rcp <- NULL
-    #if(any(grepl("CMIP5",input$rank.ensemble))) {
-    #  rcp <- c(rcp,"rcp45","rcp85")
-    #}
-    #if(any(grepl("CMIP6",input$rank.ensemble))) {
-    #  rcp <- c(rcp,"ssp585")
-    #}
-    rcp <- input$rcp
-    ranking.all(varid="tas",ref=input$tasref,rcp=rcp,Regions=Regionlist(),im=input$baseensemble)
+    ranking.all(varid="tas",ref=input$tasref,rcp=input$rcp,Regions=Regionlist(),im=input$baseensemble)
   })
   
   prRanks <- reactive({
-    #rcp <- NULL
-    #if(any(grepl("CMIP5",input$rank.ensemble))) {
-    #  rcp <- c(rcp,"rcp45","rcp85")
-    #}
-    #if(any(grepl("CMIP6",input$rank.ensemble))) {
-    #  rcp <- c(rcp,"ssp585")
-    #}
-    rcp <- input$rcp
-    ranking.all(varid="pr",ref=input$prref,rcp=rcp,Regions=Regionlist(),im=input$baseensemble)
+    ranking.all(varid="pr",ref=input$prref,rcp=input$rcp,Regions=Regionlist(),im=input$baseensemble)
   })
 
   gcmnamesRanks <- reactive({gsub("ssp[0-9]{1,3}.|rcp[0-9]{1,3}.","",rownames(tasRanks()))})
@@ -186,9 +170,6 @@ shinyServer(function(input, output, session) {
   # Generate table with selected GCMs and their ranking
   gcmtable <- reactive({
     if(any(imSelected())) {
-      #x <- gcmlabel(gcmst())
-      #i <- x$exp %in% clean(input$rcp)
-      #gcms <- paste(x$cmip[i],x$gcm[i],x$rip[i],sep=".")[imSelected()]
       gcms <- gcmnamesRanks()[imSelected()]
       wr <- weightedrank()[imSelected()]
       wr <- wr[!duplicated(gcms)]
@@ -241,8 +222,6 @@ shinyServer(function(input, output, session) {
   })
 
   ## Calculations used for text colors
-  #legcols <- two.colors(n=11,start="red",end="green",middle = "orange") #colors for percentage number
-  #legcols <- colorRampPalette(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26"))(11)
   legcols <- rep("#2c7fb8",11)
 
   # Color list for scatterplot
@@ -266,26 +245,7 @@ shinyServer(function(input, output, session) {
           "The <i>'Advanced settings'</i> let you choose the reference data sets and exclude specific models from the base ensemble.<br><br>",
           "You can click on +/- in the top right corner of the boxes to expand/collapse them.<br><br>",
           "Reference: Parding et al., 2020: GCMeval - An interactive tool for evaluation and selection of climate model ensembles,<i> Climate Services</i>, submitted."
-)
-   #paste("This is a tool to help you evaluate subsets of climate models from the CMIP5 and CMIP6 ensembles.<br><br>",
-    #      "Step 1) Select which emission scenarios to include in the base ensemble in the <i>'Model Selection'</i> menu.<br><br>", 
-    #      "Step 2) In <i>'Settings for skill evaluation'</i>, select two focus regions ",
-    #      "and set the weights for the regions and various meteorological parameters (temperature and precipitation at the moment), ",
-	  #"seasons, and skill scores. Based on your choices, a weighted <b>model skill evaluation</b> is performed and ",
-    #      "the climate models are ranked according to their representation of the climate of the past. ",
-	  #"Note that small changes in weights and regions can significantly change the ranking.<br><br>",
-    #      "Step 3) In <i>'Settings for scatterplots'</i>, select a season, time horizon, and emission scenario for the",
-    #      "scatterplots which show the <b>spread of the regional mean climate change</b> among the models. ",
-	  #"Now study the scatterplots to evaluate how well the selected subset represents the full CMIP5 and/or CMIP6 ensemble. ",
-	  #"You can also show the model ranking as a color scale (tick the box above the first scatterplot!). ",
-	  #"Some additional information will be provided when you hover over the points.<br><br>",
-    #      "Step 4) You can change the subset of models in <i>'Model Selection'</i> ",
-	  #"or add them by clicking the corresponding points in the scatterplots (doesn't work on mobile phones).",
-	  #"Our suggested approach if you are picking a subset of models is to exclude climate models that represent the climate of the past very poorly, ",
-	  #"and try to find a subset out of the well performing models that preserves the statistical characteristics ",
-	  #"(e.g., spread and mean) of climate change of the full ensemble.<br><br>",
-	  #"In <i>'Model selection'</i> you can further define the ensemble size and select the top ranked or a random set of GCMs.<br>",
-	  #"The <i>'Advanced settings'</i> let you choose the reference data sets and exclude specific models from the base ensemble.")
+    )
   })
   
   output$DisclaimerText <- renderText({
@@ -301,7 +261,7 @@ shinyServer(function(input, output, session) {
   
   output$WeightsTable <- DT::renderDataTable({
     datatable(weightstable(), 
-              caption="",#HTML("<font size=+0><b>Summary of weights</b></font>"),
+              caption="",
               options=list(dom='t',
               pageLength=15,
               rownames=FALSE),
@@ -310,8 +270,6 @@ shinyServer(function(input, output, session) {
   
   bg <- reactive({
     styleEqual(seq(1,length(input$baseensemble),0.5), 
-                   #two.colors(n=length(input$baseensemble)*2-1, start="green",
-                   #           end="red", middle = "orange"))
                    colorRampPalette(rev(c("#d01c8b","#d196ba","#d7d7d7","#98c166","#4dac26")))(length(input$baseensemble)*2-1))
   })
   
@@ -437,10 +395,7 @@ shinyServer(function(input, output, session) {
       lines(region$lon,region$lat,col="magenta",lwd=3,lty=1)
     }}, width=190,height=130)
 
-  ## Output: scatterplot of temperature and precip. change 
-  
   imSelected <- reactive({
-    #return(which(gcmst() %in% paste(clean(input$rcp),gcmsSelected(),sep=".")))
     return(which(gcmnamesRanks() %in% gcmsSelected()))
   })
   
@@ -527,6 +482,10 @@ shinyServer(function(input, output, session) {
     dtdpr1()
   })
     
+  Autorange <- reactive({
+    is.null(input$xlim) & is.null(input$ylim)
+  })
+  
   dtdpr1 <- reactive({
     x <- gcmlabel(names(dtas1()))
     im.rcp45 <- x$exp=='rcp45'
@@ -580,9 +539,9 @@ shinyServer(function(input, output, session) {
                             line=list(color="black", width=1.2))) %>%
       layout(p, font=list(size=15),
              xaxis=list(title="Temperature change (°C)",range=input$xlim,
-                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = TRUE),
+                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = Autorange()),
              yaxis=list(title="Precipitation change (mm/day)",range=input$ylim,
-                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = TRUE),
+                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = Autorange()),
              showlegend=TRUE, 
              legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=4))
     if(show.distribution) {
@@ -655,9 +614,9 @@ shinyServer(function(input, output, session) {
                             line=list(color="black", width=1.2))) %>%
       layout(p, font=list(size=15),
              xaxis=list(title="Temperature change (°C)",range=input$xlim,
-                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = TRUE),
+                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = Autorange()),
              yaxis=list(title="Precipitation change (mm/day)",range=input$ylim,
-                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = TRUE),
+                        zerolinecolor="#bdbdbd", zerolinewidth=1, autorange = Autorange()),
              showlegend=TRUE, 
              legend=list(orientation="h",  xanchor="left", x = 0.1, y=-0.2, sz=4))
     if(show.distribution) {
@@ -698,30 +657,8 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  ## This doesn't work. Don't know how to access the plot (p) after rendering it
-  ## When changing range in plotly scatterplot, update xlim and ylim
-  #selectedPlot <- reactive({
-  #  p <- plotlyOutput('dtdpr1')
-  #  plotly_data()
-  #  output$dtdpr
-  #})
-  #
-  #observe({
-  #  d <- event_data(event="plotly_relayout", source="A")
-  #  if(!is.null(d)) {
-  #    p <- selectedPlot()
-  #    xlim <- p$x$layoutAttrs[[1]]$xaxis$range
-  #    ylim <- p$x$layoutAttrs[[1]]$yaxis$range
-  #    updateSliderInput(session, inputId = "xlim", value = xlim)
-  #    updateSliderInput(session, inputId = "ylim", value = ylim)
-  #  }
-  #})
-  
   # When changing RCP, change list of GCMs. 
   observeEvent(input$rcp, {
-    #x <- gcmlabel(gcmst())
-    #i <- x$exp %in% clean(input$rcp)
-    #choices <- paste(x$cmip[i],x$gcm[i],x$rip[i],sep=".")
     choices <- gcmnamesRanks()
     choices <- choices[!duplicated(choices)]
     selected <- NULL
@@ -736,9 +673,6 @@ shinyServer(function(input, output, session) {
 
   # When selecting GCMs from the checkboxes, update ngcm
   observeEvent(input$gcms,{
-    #x <- gcmlabel(gcmst())
-    #i <- x$exp %in% clean(input$rcp)
-    #choices <- paste(x$cmip[i],x$gcm[i],x$rip[i],sep=".")
     choices <- gcmnamesRanks()
     choices <- choices[!duplicated(choices)]
     updateNumericInput(session, inputId = "ngcm", 
@@ -747,9 +681,6 @@ shinyServer(function(input, output, session) {
   
   # When clicking 'best' button, select best performing GCMs
   observeEvent(input$best, {
-    #x <- gcmlabel(gcmst())
-    #i <- x$exp %in% clean(input$rcp)
-    #choices <- paste(x$cmip[i],x$gcm[i],x$rip[i],sep=".")
     choices <- gcmnamesRanks()
     selected <- choices[best()]
     choices <- choices[!duplicated(choices)]
@@ -760,9 +691,6 @@ shinyServer(function(input, output, session) {
 
   # When clicking 'random' button, select random GCMs
   observeEvent(input$randomize, {
-    #x <- gcmlabel(gcmst())
-    #i <- x$exp %in% clean(input$rcp)
-    #choices <- paste(x$cmip[i],x$gcm[i],x$rip[i],sep=".")
     choices <- gcmnamesRanks()
     choices <- choices[!duplicated(choices)]
     i <- sample(1:length(choices),input$ngcm,replace=FALSE)
@@ -773,9 +701,6 @@ shinyServer(function(input, output, session) {
   
   # When clicking 'deselect' button, deselect all GCMs and reset plotly clicks
   observeEvent(input$deselect, {
-    #x <- gcmlabel(gcmst())
-    #i <- x$exp %in% clean(input$rcp)
-    #choices <- paste(x$cmip[i],x$gcm[i],x$rip[i],sep=".")
     js$resetClick()
     choices <- gcmnamesRanks()
     choices <- choices[!duplicated(choices)]
@@ -803,18 +728,4 @@ shinyServer(function(input, output, session) {
                              selected = selected)
   })
 
-  # Contact us - send email
-  observeEvent(input$goButton, {
-    if(input$goButton==0) {
-      return(NULL)
-    } else {
-      isolate({
-        contactus(name=input$name, org=input$org, from=input$email,
-                  to="kajsamp@met.no", body=input$body)
-      })
-      session$sendCustomMessage(type = 'testmessage',
-        message = 'Thank you for your comment!')
-    }
-  })
-  
 })

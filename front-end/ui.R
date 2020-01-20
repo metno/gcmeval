@@ -29,12 +29,6 @@ dashboardPage(
             ),
             menuItem("Weights for skill evaluation", tabName="rank", icon=NULL,
                menuItem("Focus regions", tabName="regionwm", icon=NULL,
-                  #selectInput(
-                  #  "regionwm1", 
-                  #  label = "Primary focus region",
-                  #  choices = regionlist,
-                  #  selected = "Alaska/N.W. Canada [ALA:1]"
-                  #),
                   selectInput(
                     "wmreg1",
                     label = "Primary focus region",#NULL,
@@ -45,15 +39,6 @@ dashboardPage(
                     ),
                     selected = 2
                   ),
-                  #br(),
-                  #plotOutput("mapm1", width = '100%', height = '130px'),
-                  #br(),
-                  #selectInput(
-                  #  "regionwm2",
-                  #  label = "Secondary focus region",
-                  #  choices = regionlist,
-                  #  selected = "global"
-                  #),
                   selectInput(
                     "wmreg2",
                     label = "Secondary focus region",#NULL,
@@ -63,10 +48,7 @@ dashboardPage(
                       "Very important (2)" = 2
                     ),
                     selected = 1
-                  )#,
-                  #br(),
-                  #plotOutput("mapm2", width = '100%', height = '130px'),
-                  #br()
+                  )
               ),
               menuItem("Variables", tabName="varwm", icon=NULL,
                  selectInput(
@@ -219,11 +201,6 @@ dashboardPage(
                  choiceValues = c("rcp45", "rcp85", "ssp585"),
                  selected = c("rcp85","ssp585")
                ),
-               #selectInput("rcp",
-               #            label = "Emission scenario",
-               #            choices = c("RCP4.5", "RCP8.5", "SSP5 8.5"),
-               #            selected = c("RCP4.5")
-               #),
                numericInput("ngcm",
                             label = "Ensemble size",
                             value = 10, min = 1,
@@ -296,7 +273,6 @@ dashboardPage(
             status = 'info',
             collapsible = TRUE,
             collapsed = TRUE,
-	  #h4("Data"),
           HTML("Global Climate Model (GCM) data:<br>"),
        	  a("Coupled Model Intercomparison Project Phase 5 (CMIP5)",
        	    href = "https://esgf-node.llnl.gov/projects/cmip5/"), br(),
@@ -310,7 +286,6 @@ dashboardPage(
        	  a("GPCP v2.3", href = "https://www.esrl.noaa.gov/psd/data/gridded/data.gpcp.html"),
        	  "(precipitation)",
 	  br(),
-	  #h4("Source code"),
           HTML("The source code for this app is available at GitHub: "),
           a("http://github.com/metno/gcmeval/.", href = "https://github.com/metno/gcmeval/")	  
         )
@@ -330,13 +305,6 @@ dashboardPage(
                              label="Show ranking of models",
                              choices=c("Selected models","Best performing models","All models"))
           ),
-          #column(6,
-          #       checkboxGroupInput("rank.ensemble",
-          #         label = "Ensembles to compare",
-          #         choices = c("CMIP5","CMIP6"),
-          #         selected = c("CMIP5","CMIP6"),
-          #         inline=TRUE)
-          #),
           column(12,
                  DT::dataTableOutput("ModelsTable"),
                  br()
@@ -373,22 +341,6 @@ dashboardPage(
             selected = c(NULL),
             inline = TRUE, width='100%'
           ),
-          #checkboxGroupInput(
-          #  "show.rcp",
-          #  label = NULL,#HTML("<font color='black'>Emission scenarios</font>"),
-          #  choiceNames = c("RCP4.5","RCP8.5","SSP5 8.5"),
-          #  choiceValues = c("rcp45", "rcp85","ssp585"),
-          #  selected = c("rcp45"),
-          #  inline = TRUE, width='100%'
-          #),
-          #checkboxInput("show.ranking", 
-          #              label=HTML("<font size=-1<i>Show model ranking as color scale</i></font>"), 
-          #              value=FALSE,
-          #              width='40%'),
-          #checkboxInput("show.distribution", 
-          #              label=HTML("<font size=-1<i>Show distributions as box plots</i></font>"), 
-          #              value=FALSE,
-          #              width='40%'),
           box(
               label="spread1",
               title = HTML("<font size=+0>Scatterplot for primary focus region</font>"),
@@ -423,26 +375,7 @@ dashboardPage(
               htmlOutput("SpreadText")
             )
           )
-        )#,
-        #column(12,
-      #    box(
-	    #label="contact",
-	    #width='100%',
-	    #title=HTML("<font size=+1.2 color='black'><b>Contact us</b></font>"),
-	    #collapsible=TRUE,
-	    #collapsed=TRUE,
-	    ##HTML("<b>kajsa.parding@met.no</b>"),
-	    ### Replace email adress above with the following if a Mail Transfer Agent
-	    ### has been installed and configured (e.g., postfix) and mailutils has been installed.
-	    ### The email adress that receives the comments can be changed on line 679 in server.R
-	    #textInput("name", "Your name:", ""),
-	    #textInput("email", "Your e-mail:", ""),
-	    #textInput("org", "Organization:", ""),
-      #      textInput("body", "Message:", ""),
-	    #tags$head(tags$script(src="message-handler.js")),
-      #      actionButton("goButton",label = "Send")
-      #    )
-      #  )        
+        )
       )
     )
   )
