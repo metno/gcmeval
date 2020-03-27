@@ -553,6 +553,17 @@ shinyServer(function(input, output, session) {
     } else {
       p <- pscatter
     }
+    #Scale download plot and give it a specific fileanme
+    p  %>%
+      config(
+        toImageButtonOptions = list(
+          format =  'png', # one of png, svg, jpeg, webp
+          filename = paste(input$season,input$regionwm1,tolower(input$period),sep="_"),
+          scale = 3
+        ),
+        #Remove lasso2d and select2d button from the bar in the scatterplot
+        showEditInChartStudio = TRUE, modeBarButtonsToRemove = c("lasso2d","select2d")
+      )
   })
   
   output$dtdpr2 <- renderPlotly({
@@ -628,6 +639,17 @@ shinyServer(function(input, output, session) {
     } else {
       p <- pscatter
     }
+    #Scale download plot and give it a specific fileanme
+    p  %>%
+      config(
+        toImageButtonOptions = list(
+          format =  'png', # one of png, svg, jpeg, webp
+          filename = paste(input$season,input$regionwm2,tolower(input$period),sep="_"),
+          scale = 3
+        ),
+        #Remove lasso2d and select2d button from the bar in the scatterplot
+        showEditInChartStudio = TRUE, modeBarButtonsToRemove = c("lasso2d","select2d")
+      )
   })
   
   output$clickevent <- renderPrint({
