@@ -265,7 +265,7 @@ shinyServer(function(input, output, session) {
           "A subset of models can be selected manually by clicking the corresponding points in the scatterplots (doesn't work on mobile devices).<br><br>",
           "The <i>'Advanced settings'</i> let you choose the reference data sets and exclude specific models from the base ensemble.<br><br>",
           "You can click on +/- in the top right corner of the boxes to expand/collapse them.<br><br>",
-          "Reference: Parding et al., 2020: GCMeval - An interactive tool for evaluation and selection of climate model ensembles,<i> Climate Services</i>, submitted."
+          "Reference: Parding et al., 2020: GCMeval - An interactive tool for evaluation and selection of climate model ensembles,<i> Climate Services</i>, CLISER-D-19-00006R1, DOI: <a href='https://doi.org/10.1016/j.cliser.2020.100167'>10.1016/j.cliser.2020.100167</a>."
 )
    #paste("This is a tool to help you evaluate subsets of climate models from the CMIP5 and CMIP6 ensembles.<br><br>",
     #      "Step 1) Select which emission scenarios to include in the base ensemble in the <i>'Model Selection'</i> menu.<br><br>", 
