@@ -19,7 +19,7 @@ dashboardPage(
                 br(),
                 selectInput(
                   "regionwm2", 
-                  label = "Primary focus region",
+                  label = "Secondary focus region",
                   choices = regionlist,
                   selected = "global"
                 ),
@@ -85,7 +85,7 @@ dashboardPage(
                 ),
                 selectInput(
                   "wmdjf",
-                  label = "Winter",
+                  label = "Winter (DJF)",
                   choices = c(
                     "Not considered (0)" = 0,
                     "Important (1)" = 1,
@@ -95,7 +95,7 @@ dashboardPage(
                 ),
                 selectInput(
                   "wmmam",
-                  label = "Spring",
+                  label = "Spring (MAM)",
                   choices = c(
                     "Not considered (0)" = 0,
                     "Important (1)" = 1,
@@ -105,7 +105,7 @@ dashboardPage(
                 ),
                 selectInput(
                   "wmjja",
-                  label = "Summer",
+                  label = "Summer (JJA)",
                   choices = c(
                     "Not considered (0)" = 0,
                     "Important (1)" = 1,
@@ -115,7 +115,7 @@ dashboardPage(
                 ),
                 selectInput(
                   "wmson",
-                  label = "Autumn",
+                  label = "Autumn (SON)",
                   choices = c(
                     "Not considered (0)" = 0,
                     "Important (1)" = 1,
@@ -171,7 +171,7 @@ dashboardPage(
               selectInput(
                 "season",
                 label = "Season",
-                choices = c("Annual mean", "Winter", "Spring", "Summer", "Autumn"),
+                choices = c("Annual mean", "Winter (DJF)", "Spring (MAM)", "Summer (JJA)", "Autumn (SON)"),
                 selected = "Annual mean"
               ),
               selectInput(
