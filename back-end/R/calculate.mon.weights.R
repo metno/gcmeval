@@ -6,7 +6,8 @@ calculate.mon.weights <- function(lon,lat) {
   lat.weights <- rep(cos(pi*lat/180),length(lon))
   dim(lat.weights) <- c(length(lat),length(lon))
   lat.weights <- t(lat.weights)
-  image(lat.weights)
+  #Showing the weights can be useful for debugging, but may otherwise interrupt the importing process if it is done in a non-graphical session, so the default is now not to show it.
+  #image(lat.weights)
   for(i in 1:length(lat)){
     weights[,,i] <- time.weights
   }
