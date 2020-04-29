@@ -244,6 +244,7 @@ shinyServer(function(input, output, session) {
           "A subset of models can be selected manually by clicking the corresponding points in the scatterplots (doesn't work on mobile devices).<br><br>",
           "The <i>'Advanced settings'</i> let you choose the reference data sets and exclude specific models from the base ensemble.<br><br>",
           "You can click on +/- in the top right corner of the boxes to expand/collapse them.<br><br>",
+          "<h4><b>Video</b></h4> For EGU 2020 we have made a <a href='https://www.youtube.com/watch?v=_jesUT5wsSY' target='_blank'>video presentation</a> that includes a demonstration of how to use GCMeval.<br><br>",
           "<h4><b>Reference</b></h4> Parding et al., 2020: GCMeval - An interactive tool for evaluation and selection of climate model ensembles,<i> Climate Services</i> (2020), DOI: <a href='https://doi.org/10.1016/j.cliser.2020.100167' target='_blank'>https://doi.org/10.1016/j.cliser.2020.100167</a>."
     )
   })
