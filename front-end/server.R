@@ -58,10 +58,10 @@ shinyServer(function(input, output, session) {
   ## Season selection for scatterplot
   Season <- reactive({switch(tolower(as.character(input$season)),
                              'annual mean'='ann',
-                             'winter'=c('dec','jan','feb'),
-                             'spring'=c('mar','apr','may'),
-                             'summer'=c('jun','jul','aug'),
-                             'autumn'=c('sep','oct','nov'))})
+                             'winter'=c('dec','jan','feb'), 'winter (djf)'=c('dec','jan','feb'),
+                             'spring'=c('mar','apr','may'), 'spring (mam)'=c('mar','apr','may'),
+                             'summer'=c('jun','jul','aug'), 'summer (jja)'=c('jun','jul','aug'),
+                             'autumn'=c('sep','oct','nov'), 'autumn (son)'=c('sep','oct','nov') )})
   ## Period selection for scatterplot
   Period <- reactive({switch(tolower(as.character(input$period)),
                              "far future (2071-2100)"='ff',
