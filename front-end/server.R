@@ -244,7 +244,8 @@ shinyServer(function(input, output, session) {
           "A subset of models can be selected manually by clicking the corresponding points in the scatterplots (doesn't work on mobile devices).<br><br>",
           "The <i>'Advanced settings'</i> let you choose the reference data sets and exclude specific models from the base ensemble.<br><br>",
           "You can click on +/- in the top right corner of the boxes to expand/collapse them.<br><br>",
-          "Reference: Parding et al., 2020: GCMeval - An interactive tool for evaluation and selection of climate model ensembles,<i> Climate Services</i>, submitted."
+	  "<h4><b>Video</b></h4> For EGU 2020 we have made a <a href='https://www.youtube.com/watch?v=_jesUT5wsSY' target='_blank'>video presentation</a> that includes a demonstration of how to use GCMeval.<br><br>",
+          "<h4><b>Reference</b></h4> Parding et al., 2020: GCMeval - An interactive tool for evaluation and selection of climate model ensembles,<i> Climate Services</i>, DOI: <a href='https://doi.org/10.1016/j.cliser.2020.100167' target='_blank'>https://doi.org/10.1016/j.cliser.2020.100167</a>."
     )
   })
   
@@ -553,6 +554,17 @@ shinyServer(function(input, output, session) {
     } else {
       p <- pscatter
     }
+    #Scale download plot and give it a specific fileanme
+    p  %>%
+      config(
+        toImageButtonOptions = list(
+          format =  'png', # one of png, svg, jpeg, webp
+          filename = paste(input$season,input$regionwm1,tolower(input$period),sep="_"),
+          scale = 3
+        ),
+        #Remove lasso2d and select2d button from the bar in the scatterplot
+        showEditInChartStudio = TRUE, modeBarButtonsToRemove = c("lasso2d","select2d")
+      )
   })
   
   output$dtdpr2 <- renderPlotly({
@@ -628,6 +640,17 @@ shinyServer(function(input, output, session) {
     } else {
       p <- pscatter
     }
+    #Scale download plot and give it a specific fileanme
+    p  %>%
+      config(
+        toImageButtonOptions = list(
+          format =  'png', # one of png, svg, jpeg, webp
+          filename = paste(input$season,input$regionwm2,tolower(input$period),sep="_"),
+          scale = 3
+        ),
+        #Remove lasso2d and select2d button from the bar in the scatterplot
+        showEditInChartStudio = TRUE, modeBarButtonsToRemove = c("lasso2d","select2d")
+      )    
   })
   
   output$clickevent <- renderPrint({
