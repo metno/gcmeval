@@ -264,7 +264,6 @@ dashboardPage(
           status = 'primary',
           collapsible = TRUE,
           collapsed = FALSE,
-       	  #h4("How do I use the GCMeval tool?"),
        	  htmlOutput("IntroText"),
           br(),
           box(
