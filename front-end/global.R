@@ -286,10 +286,10 @@ ranking <- function(stats=NULL, measure="bias", varid="tas", season="ann",
   }
   if (!season %in% names(X[[1]][[1]]$global$mean)) {
     season <- switch(season, "ann"="ann", "Annual mean"="ann", 
-                     "djf" = c("dec","jan","feb"), "Winter" = c("dec","jan","feb"), 
-                     "mam"=c("mar","apr","may"), "Spring"=c("mar","apr","may"),
-                     "jja" = c("jun","jul","aug"), "Summer" = c("jun","jul","aug"), 
-                     "son"=c("sep","oct","nov"), "Autumn"=c("sep","oct","nov"))
+                     "djf" = c("dec","jan","feb"), "Winter" = c("dec","jan","feb"), "Winter (DJF)" = c("dec","jan","feb"), 
+                     "mam"=c("mar","apr","may"), "Spring"=c("mar","apr","may"), "Spring (MAM)"=c("mar","apr","may"),
+                     "jja" = c("jun","jul","aug"), "Summer" = c("jun","jul","aug"), "Summer (JJA)" = c("jun","jul","aug"),
+                     "son"=c("sep","oct","nov"), "Autumn"=c("sep","oct","nov"), "Autumn (SON)"=c("sep","oct","nov"))
   }
   
   gcms <- lapply(X, names)
@@ -392,11 +392,11 @@ spread <- function(stats=NULL, varid="tas", season="ann", region="global",
     region <- srex$label[i.srex]
   }
   if (!season %in% names(X[[period]]$gcm.1$global$mean)) {
-    season <- switch(season, "ann"="ann", "Annual mean"="ann", 
-                     "djf" = c("dec","jan","feb"), "Winter" = c("dec","jan","feb"), 
-                     "mam"=c("mar","apr","may"), "Spring"=c("mar","apr","may"),
-                     "jja" = c("jun","jul","aug"), "Summer" = c("jun","jul","aug"), 
-                     "son"=c("sep","oct","nov"), "Autumn"=c("sep","oct","nov"))
+    season <- switch(season, "ann"="ann", "Annual mean"="ann",
+                     "djf" = c("dec","jan","feb"), "Winter" = c("dec","jan","feb"), "Winter (DJF)" = c("dec","jan","feb"),
+                     "mam"=c("mar","apr","may"), "Spring"=c("mar","apr","may"), "Spring (MAM)"=c("mar","apr","may"),
+                     "jja" = c("jun","jul","aug"), "Summer" = c("jun","jul","aug"), "Summer (JJA)" = c("jun","jul","aug"),
+                     "son"=c("sep","oct","nov"), "Autumn"=c("sep","oct","nov"), "Autumn (SON)"=c("sep","oct","nov")) 
   }
   
   gcms.all <- unique(unlist(lapply(X,names)))
