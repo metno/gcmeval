@@ -21,7 +21,6 @@ cdo.spatSd <- function(model.file,period=c(1981,2010),mask=NULL,seasonal=FALSE,
   command <- ("output")
   input <- c("")
   out <- as.numeric(cdo.command(command,input,out.file,NULL,bit=bit,intern=TRUE))
-  
   if(monthly) {
     names(out) <- c("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec")
   } else if(seasonal) {

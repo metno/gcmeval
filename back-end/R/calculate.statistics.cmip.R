@@ -1,8 +1,9 @@
 calculate.statistics.cmip <- function(file.gcm, file.ref=NULL, period=c(1981,2010), 
+                                      file.shape="referenceRegions.shp", 
                                       mask="coords.txt", stats=c("mean","spatial.sd","corr","rmse"),
                                       verbose=FALSE) {
   if(verbose) print("calculate.statistics.cmip")
-  shape <- get.shapefile("referenceRegions.shp")
+  shape <- get.shapefile(filename=file.shape)
   srex.regions <- as.character(shape$LAB)
   if(min(period)>2010 | !any(c("corr","rmse") %in% stats)) file.ref <- NULL
   
@@ -38,7 +39,6 @@ calculate.statistics.cmip <- function(file.gcm, file.ref=NULL, period=c(1981,201
     } else {
       ref <- "ref"
     }
-    
     if(any(grepl("ref",stats))) {
       if(verbose) print("Global")
       if(verbose) print("Calculate basic statistics for reference data")

@@ -9,6 +9,7 @@ cdo.command <- function(commands,input,infile,outfile,bit=8,intern=FALSE) {
   system.command <- paste("cdo -L -b",bit,paste(cdo.coms,collapse=" "),infile,outfile,sep=" ")
   if(intern) {
     output <- system(system.command,wait=TRUE,intern=TRUE)
+    output <- output[1:(length(output)-1)] # remove process information
     return(output)
   } else {
     system(system.command,wait=TRUE)

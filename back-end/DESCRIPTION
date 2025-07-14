@@ -1,6 +1,6 @@
 Package: gcmeval
-Version: 0.1.4
-Date: Nov 8 2019
+Version: 1.0.1
+Date: Jul 14 2025
 Title: gcmeval
 Author: Kajsa M. Parding <kajsa.parding@met.no>, 
         Andreas Dobler <andreas.dobler@met.no>,
@@ -9,19 +9,20 @@ Author: Kajsa M. Parding <kajsa.parding@met.no>,
         and Rasmus E. Benestad <rasmus.benestad@met.no>
 Maintainer: Kajsa Parding <kajsa.parding@met.no>
 Depends:
-    R (>= 3.5.0)
+    R (>= 4.0.0)
 Imports:
     graphics,
     grDevices,
     ncdf4,
     raster,
     RCurl,
-    rgdal,
-    stats,
+    sf,
     sp,
+    stats,
     utils,
     zoo
 Description: The package contains R functions for retrieving and organising data, extracting metadata into a metadatabase.
 License: GPL (>= 2)
 URL: https://github.com/kajsamp/gcmeval
 ZipData: no
+RoxygenNote: 7.3.2

@@ -1,8 +1,10 @@
 ## Calculate the mean annual cycle and spatial correlation for CMIP models
 calculate.statistics <- function(files.in, meta=NULL, file.out="statistics.rda", ref=NULL,
-                                 path.in=NULL, path.out=NULL, path.ref=NULL,
+                                 path.in=NULL, path.out=NULL, path.ref=NULL, files.ref=NULL,
+                                 file.shape="referenceRegions.shp",
                                  stats=c("mean.gcm","spatial.sd.gcm","mean.ref","spatial.sd.ref","corr","rmse"),
                                  period=c(1981,2010), add=TRUE, force=FALSE, verbose=FALSE) {
+  
   if(verbose) print("calculate.statistics")
   if(!is.null(path.in)) files.in <- file.path(path.in, files.in)
   if(!is.null(path.out)) file.out <- file.path(path.out, file.out)
@@ -28,7 +30,8 @@ calculate.statistics <- function(files.in, meta=NULL, file.out="statistics.rda",
   if(!is.null(ref)) {
     if(verbose) print("Get reference data")
     for(var in unique(M$var)) {
-      file.ref <- try(getReference(reference=ref, variable=var, path=path.ref))
+      file.ref <- try(getReference(reference=ref, variable=var, path=path.ref,
+                                   filenames=files.ref))
       if(!inherits(file.ref,"try-error")) {
         res.ref <- resolution(file.ref, dim=c("lat","latitude"))
         if(res.ref<0) {
@@ -83,7 +86,7 @@ calculate.statistics <- function(files.in, meta=NULL, file.out="statistics.rda",
     ref.f <- M$ref[i]
     var.f <- M$var[[i]]
     pid.f <- M$project_id[[i]]
-    exp.f <- cleanstr(M$experiment[[i]])
+    exp.f <- cleanstr(M$experiment[[i]], tolower=TRUE)
     gcm.f <- M$gcm.i[[i]]
     stats.f <- stats
     if(is.na(ref.f)) {
@@ -121,7 +124,8 @@ calculate.statistics <- function(files.in, meta=NULL, file.out="statistics.rda",
       }
     }
     if(length(stats.f)>0) {
-      S.new <- calculate.statistics.cmip(f, file.ref=ref.f, stats=stats.f, period=period, verbose=verbose)
+      S.new <- calculate.statistics.cmip(f, file.ref=ref.f, stats=stats.f, period=period, 
+                                         file.shape=file.shape, verbose=verbose)
       if("GCM" %in% names(S.new)) {
         if(verbose) print(paste("Add new statistics for GCM",f))
         for(region in names(S.new$GCM)) {
@@ -165,9 +169,13 @@ calculate.statistics <- function(files.in, meta=NULL, file.out="statistics.rda",
         Z <- Y[[rcp]][[label.period]]
         W <- Z[grepl("CMIP|gcm",names(Z))]
         if(is.null(W[[1]][[1]]$rmse)) {
-          if(verbose) print("Warning! Cannot calculate CMPI because rmse hasn't been calculated yet.")
+          if(verbose) print(paste0("Warning! Cannot calculate CMPI because rmse hasn't ",
+                            "been calculated for variable ", var, " and reference ",
+                            ref, "."))
         } else if (!ref %in% names(W[[1]][[1]]$rmse)) {
-          if(verbose) print("Warning! Cannot calculate CMPI because rmse hasn't been calculated yet.")
+          if(verbose) print(paste0("Warning! Cannot calculate CMPI because rmse hasn't ",
+                                   "been calculated for variable ", var, " and reference ",
+                                   ref, "."))
         } else {
           median.rmse <- list()
           for(region in names(W[[1]])) {
@@ -178,7 +186,9 @@ calculate.statistics <- function(files.in, meta=NULL, file.out="statistics.rda",
           for(gcm in names(W)) {
             for(region in names(W[[gcm]])) {
               if(is.null(W[[gcm]][[region]]$rmse[[ref]])) {
-                if(verbose) print("Warning! Cannot calculate cmpi because rmse hasn't been calculated yet.")
+                if(verbose) print(paste0("Warning! Cannot calculate CMPI because rmse hasn't ",
+                                         "been calculated for variable ", var, ", reference ",
+                                         ref, ", gcm ", gcm, ", and region ", region, "."))
               } else {
                 cmpi <- (W[[gcm]][[region]]$rmse[[ref]] - median.rmse[[region]])/median.rmse[[region]]
                 statistics[[var]][[rcp]][[label.period]][[gcm]][[region]]$cmpi[[ref]] <- cmpi

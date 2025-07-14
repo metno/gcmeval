@@ -2,6 +2,13 @@
 python.getEra5 <- function(start,end,varid,type,stream,outfile,
                            python="python",verbose=FALSE) {
   if(verbose) print("python.getEra5")
+  print(paste("Warning! The function python.getEra5 is deprecated and",
+        "has not yet been updated to the new cdsapi.",
+	"ERA5 data can be downloaded from ",
+	"https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download"))
+  ## KMP 2025-07-14: This function does not work anymore!
+  ## The python file needs to changed to work with the new cdsapi 
+  #path.era <- find.file("getMonthlyERA5_new.py")
   path.era <- find.file("getMonthlyERA5.py")
   script <- paste(python,path.era[1])
   path <- dirname(outfile)
@@ -10,6 +17,7 @@ python.getEra5 <- function(start,end,varid,type,stream,outfile,
                     as.Date(paste0(end,"-12-01")),by="month"),
                     format="%Y%m%d")
   if(verbose) print("Run CDS Python script for downloading ERA5 data")
+  #browser()
   system.command <- paste(script," -f ",start," -l ",end,
                           " -v ",varid," -t ",type," -r ",stream,
                           " -o ",outfile,sep="")

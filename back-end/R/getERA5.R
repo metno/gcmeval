@@ -2,28 +2,30 @@
 # You have to install python and install the CDS API key and client:
 # https://cds.climate.copernicus.eu/api-how-to
 
-getERA5 <- function(variable,start=1979,end=2018,griddes="cmip_1.25deg_to_2.5deg.txt",
-                   destfile=NULL,path=NULL,force=FALSE,python="python",verbose=FALSE){
+getERA5 <- function(variable, start=1979, end=2018,
+                    gridfile="cmip_1.25deg_to_2.5deg.txt",
+                    path.gridfile=NULL, destfile=NULL, path=NULL,
+                    force=FALSE, python="python3",verbose=FALSE){
   if(verbose) print("getERA5")
-  griddes <- find.file(griddes)[1]
+  if(!file.exists(gridfile)) gridfile <- find.file(gridfile, path=path.gridfile)[1]
   if(any(match(c("tas","tmp","temp","temperature","t2m"),variable,nomatch=0))) {
     if(verbose) print("variable: temperature")
     varID <- "167.128"
     stream <- "moda"
     type <- "an"
     cmd <- c("-chname","-remapcon")
-    input <- c("2t,tas",griddes)
+    input <- c("2t,tas",gridfile)
   } else if(any(match(c("pre","prc","prec","precipitation","pr"),variable,nomatch=0))) {
     if(verbose) print("variable: precipitation")
     varID <- "228.128"
     stream <- "moda"
     type <- "fc"
     cmd <- c("-chname","-remapcon")
-    input <- c("tp,pr",griddes)
+    input <- c("tp,pr",gridfile)
   }
   if(is.null(destfile)) destfile <- paste0("era5_monthly_",paste(start,end,sep="-"),"_",variable,".nc")
   outfile <- gsub('.nc$','.2.5deg.nc',destfile)
-  if(!is.null(path)) outfile <- file.path(path,outfile) 
+  if(!is.null(path)) outfile <- file.path(path,outfile)
   if(!file.exists(outfile)|force) {
     if(verbose) print("NetCDF file with 2.5deg data does not exist.")
     if(!is.null(path)) destfile <- file.path(path,destfile)

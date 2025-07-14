@@ -37,8 +37,9 @@ cdo.mean <- function(model.file,period=c(1981,2010),mask=NULL,seasonal=FALSE,
   } else {
     names(out) <- "ann"
   } 
+  
   # If applying to e.g. slp data, set is.temp to FALSE to skip this correction:
-  if(out>200 & is.temp) out <- out-273.15 
+  if(all(out>200) & is.temp) out <- out-273.15 
   if(!save.file) system(paste("rm",outfile,sep=" "))
   invisible(out)
 }

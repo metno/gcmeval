@@ -1,8 +1,11 @@
 #Search and read a shapefile
-get.shapefile <- function(filename,with.path=FALSE){
-  fullname <- filename
-  if(!with.path){
-    fullname <- find.file(filename)[1]
+get.shapefile <- function(filename,path=NULL,verbose=FALSE) {
+  if(verbose) print("get.shapefile")
+  if(filename!=basename(filename) & is.null(path)) {
+    path <- dirname(filename)
+    filename <- basename(filename)
   }
-  rgdal::readOGR(fullname,verbose=FALSE)
+  fullname <- find.file(filename, path=path)[1]
+  shape <- sf::st_read(fullname)
+  invisible(shape)
 }

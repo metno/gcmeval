@@ -4,6 +4,7 @@ calculate.statistics.cmip5 <- function(reference="eraint", period=c(1981,2010),
                                        experiment="rcp45", nfiles=5,
                                        path.gcm=NULL, add=TRUE, force=FALSE, 
                                        path=NULL, mask="coords.txt", 
+                                       path.ref=NULL, files.ref=NULL,
                                        store.file="statistics.rda",
                                        stats=c("mean","spatial.sd","corr","rmse"),
                                        verbose=FALSE) {
@@ -25,7 +26,8 @@ calculate.statistics.cmip5 <- function(reference="eraint", period=c(1981,2010),
   if(is.null(reference)) {
     stats <- stats[!stats %in% c("corr","rmse")]
   } else {
-    ref.file <- getReference(reference,variable)
+    ref.file <- getReference(reference, variable, path=path.ref,
+                             filenames=files.ref)
     if(!is.character(ref.file)) {
       reference <- NULL
       print("Warning! Reference file not found. Continuing without reference data.")
@@ -88,7 +90,6 @@ calculate.statistics.cmip5 <- function(reference="eraint", period=c(1981,2010),
     X <- list()
     statistics <- list()
   }
-  
   if("rmse" %in% stats) {
     if(verbose) print("Prepare reference data for rmse calculations")
     ref.mon.file <- paste(reference,"monmean",variable,"nc",sep=".")

@@ -20,6 +20,8 @@ shinyjs.resetClick = function() {
   Shiny.onInputChange('.clientValue-plotly_click-A', 'null'); 
 }"
 
+file.shape <- "../back-end/inst/extdata/SREX_regions/referenceRegions.shp"
+
 regionlist <- c(
   "Global",
   "Alaska/N.W. Canada [ALA:1]",
@@ -181,8 +183,7 @@ dataPrep <- function(rcp="rcp45") {
 regions <- function(type=c("srex","prudence"),region=NULL) {
   if(is.null(type) | length(type)>1) region <- NULL
   if(is.null(type) | "srex" %in% tolower(type)) {
-    f <- "../back-end/inst/extdata/SREX_regions/referenceRegions.shp"
-    x <- get.shapefile(f,with.path=TRUE)
+    x <- get.shapefile(filename=file.shape)
     ivec <- 1:nrow(x)
     if(!is.null(region)) {
       if(is.numeric(region)) {
@@ -199,7 +200,7 @@ regions <- function(type=c("srex","prudence"),region=NULL) {
               label=as.character(x$LAB[ivec]), 
               usage=as.character(x$USAGE[ivec]),
               type=rep("srex",length(ivec)),
-              coords=lapply(ivec, function(i) t(coordinates(x@polygons[[i]]@Polygons[[1]]))))
+              coords=lapply(ivec, function(i) t(coordinates(sf::as_Spatial(x)@polygons[[i]]@Polygons[[1]]))))
   } else {
     y <- NULL
   }

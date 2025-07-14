@@ -37,6 +37,10 @@ metaextract.cmip <- function(x, verbose=FALSE) {
       eval(parse(text=paste(mi," <- x$model$",mi,sep="")))
     }
   }
+  ## KMP 2025-07-07: Work around for GISS files with a faulty model_id
+  if(grepl("Tomaf10|matrix", x$model$model_id) & !is.null(x$model$parent_source_id)) {
+    x$model$model_id <- x$model$parent_source_id
+  }
   
   for(mi in c("realization","initialization","physics","forcing","realm")) {
     if(any(grepl(mi,names(x$model)))) {
@@ -104,7 +108,18 @@ metaextract.cmip <- function(x, verbose=FALSE) {
     }
     if(is.na(experiment_id)) experiment_id <- experiment
   } 
-
+  ## KMP 2025-07-07: Keep only the scenario in the experiment information,
+  ## e.g. SSP585 instead of SSP585/PR or historical+SSP585. If the time series 
+  ## start before 2010, a label is added then added historical run. 
+  if(grepl("ssp", tolower(experiment))) {
+    i.ssp <- regexpr("ssp", tolower(experiment))
+    experiment <- substr(experiment, i.ssp, i.ssp + 5)
+  }
+  experiment <- toupper(sub("[.]","",experiment))
+  if(grepl("ssp", tolower(experiment_id))) {
+    i.ssp <- regexpr("ssp", tolower(experiment_id))
+    experiment_id <- substr(experiment_id, i.ssp, i.ssp + 5)
+  }
   experiment_id <- tolower(sub("[.]","",experiment_id))
   if(min(x$dates)<as.Date("2010-01-01") & !grepl("historical",experiment_id)) {
     experiment_id <- paste("historical",experiment_id,sep="+")
