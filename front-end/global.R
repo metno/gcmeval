@@ -65,7 +65,7 @@ data(package="gcmeval", "statistics", envir=environment())
 
 ## Load geographical data for map
 #data(package="esd", "geoborders", envir=environment())
-data(package="gcmeval", "geoborder", envir=environment())
+data(package="gcmeval", "geoborders", envir=environment())
 
 clean <- function(x) {
   gsub("[[:punct:]]|[[:space:]]","",tolower(x))
