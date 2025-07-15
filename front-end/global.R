@@ -5,7 +5,7 @@ library(shinyjs)
 library(shinydashboard)
 library(sp)
 library(DT)
-library(esd)
+#library(esd)
 library(fields)
 library(plotly)
 library(gcmeval) # back-end package
@@ -64,7 +64,8 @@ data(package="gcmeval", "meta", envir=environment())
 data(package="gcmeval", "statistics", envir=environment())
 
 ## Load geographical data for map
-data(package="esd", "geoborders", envir=environment())
+#data(package="esd", "geoborders", envir=environment())
+data(package="gcmeval", "geoborder", envir=environment())
 
 clean <- function(x) {
   gsub("[[:punct:]]|[[:space:]]","",tolower(x))
